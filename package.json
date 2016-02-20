@@ -1,0 +1,41 @@
+{
+  "name": "module-alias",
+  "description": "Simple module for registering aliases of directories and custom module paths",
+  "version": "0.0.1",
+  "author": {
+    "name": "Nikita Gavrilov"
+  },
+  "scripts": {
+    "test": "npm run lint && npm run testonly",
+    "testonly": "mocha $npm_package_options_mocha",
+    "lint": "eslint src"
+  },
+  "bugs": {
+    "url": "https://github.com/ilearnio/module-alias/issues"
+  },
+  "homepage": "https://github.com/ilearnio/module-alias",
+  "keywords": [
+    "extend",
+    "modules",
+    "node",
+    "path",
+    "resolve"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "register.js",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilearnio/module-alias.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^1.1.0",
+    "mocha": "^2.4.5"
+  }
+}

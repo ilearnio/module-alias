@@ -1,0 +1,10 @@
+{
+  "name": "test-app",
+  "_moduleDirectories": ["node_modules_custom"],
+  "_moduleAliases": {
+    "@src": "",
+    "@foo": "foo/index.js",
+    "@bar": "bar",
+    "some/foo": "foo"
+  }
+}
