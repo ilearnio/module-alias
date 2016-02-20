@@ -36,7 +36,7 @@ import 'module-alias/register'
 // And you're all set, now you can do stuff like
 import 'something'
 import module from '@root/some-module'
-import veryDeepModule from '@bar/my-module'
+import veryDeepModule from '@deep/my-module'
 import myModule from '@my_module' // module from `node_modules_custom` directory
 ```
 
@@ -94,7 +94,7 @@ module.exports = {
 
 ## How it works?
 
-In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the directory then acts like it's the `node_modules` directory.
+In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
 
 In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you fire `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it then replaces the alias in the string with the target path of the alias
 
