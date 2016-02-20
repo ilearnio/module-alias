@@ -1,8 +1,16 @@
 sudo: false
 language: node_js
 node_js:
-  - 'stable'
-  - '5.0'
-  - '4.0'
-  - '0.12'
-  - '0.10'
+- stable
+- '5.0'
+- '4.0'
+- '0.12'
+- '0.10'
+deploy:
+  provider: npm
+  email: artnikpro@gmail.com
+  api_key:
+    secure: hbPzr8HHc8KgKRJg8HkCw7rhbkMg6rfs8JIyzmAidDC6kUpeiBEyoQBw4A55eW8/q72PmPmeEP29jVYT3bfQlK9LC8f061OZLAgYmlOnT3OAnGZeuCaZQbQ202e6WlRmuxOwh4Wwq4lgADv3P1MJivUFtJzLnPQWvnt9QmB4icTQEVdJb5uVwJjwPl0nRiBvSFdznl7Tb4CjOaXnUyf6AG3Uez/qhAfqlSt/gH5pGXkQhutR0Ki4w8JgQmXwYfG5arhaPzLsyAu6fNg3tSQkL6zVw71Z04X72klT7r1gLvetSRIPGtl/cqc2pyzv1lI+15ioQ0+tH0k/wf1drz5kbpZkrbhpPA5mwT8ispJSYDeS+v/pAfTgRXROUMg/kC6cWXtH8D9lwaMMMVHcmNGqqb7eNb8YPLlVesj98n9MVutER3KS+POZL9gn2qqNfxXXslOpKpMLPd+qciGC+XuKDQLbunSSiMe6q6mR4NjtcQ2Vt7HiukFoUpvMDAk9opBoKkI8x3Unqh6VNOljCvRVCOfvAChgerJaGgqlJq4POhGiuM5xFKzYFuLB58DRNw8CaGl5IRn6F/bUvGV3Lc5Mh8aTkdx1zjsriKZFuuvB/yPYXYHHF49ZD7dLg3+FbAIy65ck0aFitxPa1/ZdsUs5l5ISFrzu+dR9wSDNlve8qdw=
+  on:
+    tags: true
+    repo: ilearnio/module-alias

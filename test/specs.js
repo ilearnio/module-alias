@@ -19,8 +19,8 @@ describe('', function() {
     expect(value).to.equal('Hello from foo')
   })
 
-  it('should register an alias (setAlias)', function() {
-    moduleAlias.setAlias('@baz', __dirname + '/src/bar/baz')
+  it('should register an alias (addAlias)', function() {
+    moduleAlias.addAlias('@baz', __dirname + '/src/bar/baz')
 
     var value
     try { value = require('@baz') }
@@ -41,8 +41,8 @@ describe('', function() {
     expect(baz).to.be.null
   })
 
-  it('should register multiple aliases (setAliases)', function() {
-    moduleAlias.setAliases({
+  it('should register multiple aliases (addAliases)', function() {
+    moduleAlias.addAliases({
       '@src': __dirname + '/src',
       '@foo': __dirname + '/src/foo/index.js',
       '@bar': __dirname + '/src/bar',
