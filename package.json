@@ -7,7 +7,7 @@
   },
   "scripts": {
     "test": "npm run lint && npm run testonly",
-    "testonly": "mocha $npm_package_options_mocha",
+    "testonly": "mocha test/specs.js",
     "lint": "eslint src"
   },
   "bugs": {

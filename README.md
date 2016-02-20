@@ -4,7 +4,7 @@
 
 Allows to register aliases of directories and custom module paths in NodeJS.
 
-This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package is also allows you to create aliases of directories for further usage with `require`/`import`
+This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package also allows you to create aliases of directories for further usage with `require`/`import`
 
 ## Install
 
@@ -16,7 +16,7 @@ npm i --save module-alias
 
 Add these lines to your package.json (in your application's root)
 
-```
+```js
 "_moduleDirectories": ["node_modules_custom"],
 "_moduleAliases": {
   "@root"      : "", // Application's root
@@ -24,7 +24,7 @@ Add these lines to your package.json (in your application's root)
   "@admin"     : "src/client/admin",
   "@deep"      : "src/some/very/deep/directory",
   "@my_module" : "src/some-file.js",
-  "something"  : "src/foo", // Or without @. Actually, alias could be any string
+  "something"  : "src/foo", // Or without @. Actually, it could be any string
 }
 ```
 
