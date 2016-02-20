@@ -37,13 +37,13 @@ import 'module-alias/register'
 import 'something'
 import foo from '@foo'
 import deepModule from '@bar/my-module'
-import module from 'some-module` // module from `node_modules_custom` directory
+import module from 'some-module' // module from `node_modules_custom` directory
 ```
 
 ## Advanced usage
 
 ```js
-import moduleAlias from 'module-alias`
+import moduleAlias from 'module-alias'
 
 //
 // Register alias
