@@ -1,9 +1,10 @@
 {
   "name": "module-alias",
   "description": "Simple module for registering aliases of directories and custom module paths",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
-    "name": "Nikita Gavrilov"
+    "name": "Nikita Gavrilov",
+    "email": "artnikpro@gmail.com"
   },
   "scripts": {
     "test": "npm run lint && npm run testonly",

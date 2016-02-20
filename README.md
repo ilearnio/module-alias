@@ -4,7 +4,7 @@
 
 Allows to register aliases of directories and custom module paths in NodeJS.
 
-This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package also allows you to create aliases of directories for further usage with `require`/`import`
+This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package also allows creating aliases of directories for further usage with `require`/`import`
 
 ## Install
 
@@ -35,9 +35,9 @@ import 'module-alias/register'
 
 // And you're all set, now you can do stuff like
 import 'something'
-import foo from '@foo'
-import deepModule from '@bar/my-module'
-import module from 'some-module' // module from `node_modules_custom` directory
+import module from '@root/some-module'
+import veryDeepModule from '@bar/my-module'
+import myModule from '@my_module' // module from `node_modules_custom` directory
 ```
 
 ## Advanced usage
@@ -48,12 +48,12 @@ import moduleAlias from 'module-alias'
 //
 // Register alias
 //
-moduleAlias.addAlias('@server', __dirname + '/src/server')
+moduleAlias.addAlias('@client', __dirname + '/src/client')
 
 // Or multiple aliases
 moduleAlias.addAliases({
   '@root'  : __dirname,
-  '@server': __dirname + '/src/server',
+  '@client': __dirname + '/src/client',
   ...
 })
 
@@ -91,6 +91,13 @@ module.exports = {
   }
 }
 ```
+
+## How it works?
+
+In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the directory then acts like it's the `node_modules` directory.
+
+In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you fire `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it then replaces the alias in the string with the target path of the alias
+
 
 ### Tags
 Require alias, node import alias, node custom module directory, node local require paths, register module directory in nodejs
