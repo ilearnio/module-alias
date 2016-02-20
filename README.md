@@ -48,10 +48,10 @@ import moduleAlias from 'module-alias'
 //
 // Register alias
 //
-moduleAlias.setAlias('@server', __dirname + '/src/server')
+moduleAlias.addAlias('@server', __dirname + '/src/server')
 
 // Or multiple aliases
-moduleAlias.setAliases({
+moduleAlias.addAliases({
   '@root'  : __dirname,
   '@server': __dirname + '/src/server',
   ...

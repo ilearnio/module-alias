@@ -66,13 +66,13 @@ function addPath(path) {
   }
 }
 
-function setAliases(aliases) {
+function addAliases(aliases) {
   for (var alias in aliases) {
-    setAlias(alias, aliases[alias])
+    addAlias(alias, aliases[alias])
   }
 }
 
-function setAlias(alias, target) {
+function addAlias(alias, target) {
   module_aliases[alias] = target
 }
 
@@ -110,7 +110,7 @@ function init(options) {
   // There is probably 99% chance that the project root directory in located
   // above the node_modules directory
   var base = nodePath.resolve(
-    options.base || nodePath.join(__dirname, '../../..')
+    options.base || nodePath.join(__dirname, '../..')
   )
 
   try {
@@ -135,7 +135,7 @@ function init(options) {
     }
   }
 
-  setAliases(aliases)
+  addAliases(aliases)
 
 
   //
@@ -154,6 +154,6 @@ function init(options) {
 
 module.exports = init
 module.exports.addPath = addPath
-module.exports.setAlias = setAlias
-module.exports.setAliases = setAliases
+module.exports.addAlias = addAlias
+module.exports.addAliases = addAliases
 module.exports.reset = reset
