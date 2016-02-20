@@ -14,8 +14,8 @@ npm i --save module-alias
 
 ## Usage
 
-Add these lines to your package.json (in your application root)
-
+Add these lines to your package.json (in your application's root)
+'
 ```
 "_moduleDirectories": ["node_modules_custom"],
 "_moduleAliases": {
