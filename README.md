@@ -2,7 +2,7 @@
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 
-Simple module for registering aliases of directories and custom module paths.
+Allows to register aliases of directories and custom module paths in NodeJS.
 
 This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package is also allows you to create aliases of directories for further usage with `require`/`import`
 
@@ -15,7 +15,7 @@ npm i --save module-alias
 ## Usage
 
 Add these lines to your package.json (in your application's root)
-'
+
 ```
 "_moduleDirectories": ["node_modules_custom"],
 "_moduleAliases": {
