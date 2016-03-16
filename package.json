@@ -1,7 +1,7 @@
 {
   "name": "module-alias",
   "description": "Simple module for registering aliases of directories and custom module paths",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Nikita Gavrilov",
     "email": "artnikpro@gmail.com"
@@ -37,6 +37,7 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
+    "hello-world-classic": "ilearnio/hello-world-classic",
     "mocha": "^2.4.5"
   }
 }

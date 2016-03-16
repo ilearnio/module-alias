@@ -86,4 +86,8 @@ describe('module-alias', function () {
     expect(some).to.equal('Hello from foo')
     expect(some_module).to.equal('Hello from some-module')
   })
+
+  it('should support forked modules', function () {
+    expect(require('hello-world-classic')).to.be.function
+  })
 })
