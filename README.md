@@ -2,9 +2,20 @@
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 
-Allows to register aliases of directories and custom module paths in NodeJS.
+Create aliases of directories and register custom module paths in NodeJS like a boss!
 
-This package is highly inspired by [app-module-path](https://www.npmjs.com/package/app-module-path) package and it's totally backwards compatible with it. The main difference is that this package also allows creating aliases of directories for further usage with `require`/`import`
+No more shit-coding paths in Node like so:
+
+```js
+require('../../../../some/very/deep/module')
+```
+Enough of this madness!
+
+Just create an alias and do it the right way:
+
+```js
+require('@deep/module')
+```
 
 ## Install
 
@@ -48,6 +59,13 @@ import myModule from '@my_module' // module from `node_modules_custom` directory
 
 ## Advanced usage
 
+If you don't want to modify your `package.json` or you just prefer to set it all up programmatically, then the following methods are available for you:
+
+* `addAlias('alias', 'target_path')` - register a single alias
+* `addAliases({ 'alias': 'target_path', ... }) ` - register multiple aliases
+* `addPath(path)` - Register custom modules directory (like node_modules, but with your own modules)
+
+_Examples:_
 ```js
 import moduleAlias from 'module-alias'
 
@@ -64,14 +82,13 @@ moduleAlias.addAliases({
 })
 
 //
-// Register custom modules directory (like node_modules, but
-// with your own modules)
+// Register custom modules directory
 //
 moduleAlias.addPath(__dirname + '/node_modules_custom')
 moduleAlias.addPath(__dirname + '/src')
 
 //
-// Import settings from package.json
+// Import settings from a specific package.json
 //
 moduleAlias(__dirname + '/package.json')
 
@@ -82,6 +99,8 @@ moduleAlias()
 ```
 
 ## Usage with WebPack
+
+Luckily, WebPack has a built in support for aliases and custom modules directories so it's easy to make it work on the client side as well!
 
 ```js
 // webpack.config.js
@@ -100,9 +119,9 @@ module.exports = {
 
 ## How it works?
 
-In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
+In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you use `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it replaces the alias in the string with the target path of the alias.
 
-In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you fire `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it then replaces the alias in the string with the target path of the alias
+In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
 
 [npm-image]: https://img.shields.io/npm/v/module-alias.svg
 [npm-url]: https://npmjs.org/package/module-alias
