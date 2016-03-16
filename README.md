@@ -14,10 +14,10 @@ npm i --save module-alias
 
 ## Usage
 
-Add these lines to your package.json (in your application's root)
+Add these lines to your `package.json` (in your application's root)
 
 ```js
-"_moduleDirectories": ["node_modules_custom"],
+// Aliases
 "_moduleAliases": {
   "@root"      : "", // Application's root
   "@client"    : "src/client",
@@ -26,14 +26,20 @@ Add these lines to your package.json (in your application's root)
   "@my_module" : "src/some-file.js",
   "something"  : "src/foo", // Or without @. Actually, it could be any string
 }
+
+// Custom modules directory (optional)
+"_moduleDirectories": ["node_modules_custom"],
 ```
 
-And these line at the very main file of your app, before any code
+Then add these line at the very main file of your app, before any code
 
 ```js
 import 'module-alias/register'
+```
 
-// And you're all set, now you can do stuff like
+And you're all set! Now you can do stuff like:
+
+```js
 import 'something'
 import module from '@root/some-module'
 import veryDeepModule from '@deep/my-module'
@@ -97,10 +103,6 @@ module.exports = {
 In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
 
 In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you fire `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it then replaces the alias in the string with the target path of the alias
-
-
-### Tags
-Require alias, node import alias, node custom module directory, node local require paths, register module directory in nodejs
 
 [npm-image]: https://img.shields.io/npm/v/module-alias.svg
 [npm-url]: https://npmjs.org/package/module-alias

@@ -5,7 +5,7 @@ var module_paths = []
 var module_aliases = {}
 
 var old_nodeModulePaths = Module._nodeModulePaths
-Module._nodeModulePaths = function(from) {
+Module._nodeModulePaths = function (from) {
   var paths = old_nodeModulePaths.call(this, from)
 
   // Only include the module path for top-level modules
@@ -18,7 +18,7 @@ Module._nodeModulePaths = function(from) {
 }
 
 var old_resolveFilename = Module._resolveFilename
-Module._resolveFilename = function(request, self) {
+Module._resolveFilename = function (request, self) {
   for (var alias in module_aliases) {
     if (request.indexOf(alias) === 0) {
       request = nodePath.join(
@@ -31,14 +31,14 @@ Module._resolveFilename = function(request, self) {
   return old_resolveFilename.apply(this, arguments)
 }
 
-function addPathHelper(path, targetArray) {
+function addPathHelper (path, targetArray) {
   path = nodePath.normalize(path)
   if (targetArray && targetArray.indexOf(path) === -1) {
     targetArray.unshift(path)
   }
 }
 
-function removePathHelper(path, targetArray) {
+function removePathHelper (path, targetArray) {
   if (targetArray) {
     var index = targetArray.indexOf(path)
     if (index !== -1) {
@@ -47,7 +47,7 @@ function removePathHelper(path, targetArray) {
   }
 }
 
-function addPath(path) {
+function addPath (path) {
   var parent
   path = nodePath.normalize(path)
 
@@ -66,13 +66,13 @@ function addPath(path) {
   }
 }
 
-function addAliases(aliases) {
+function addAliases (aliases) {
   for (var alias in aliases) {
     addAlias(alias, aliases[alias])
   }
 }
 
-function addAlias(alias, target) {
+function addAlias (alias, target) {
   module_aliases[alias] = target
 }
 
@@ -81,9 +81,9 @@ function addAlias(alias, target) {
  * and custom module directories)
  * The function is undocumented and for testing purposes only
  */
-function reset() {
+function reset () {
   // Reset all changes in paths caused by addPath function
-  module_paths.forEach(function(path) {
+  module_paths.forEach(function (path) {
     removePathHelper(path, require.main.paths)
     var parent = module.parent
     while (parent && parent !== require.main) {
@@ -100,7 +100,7 @@ function reset() {
  * Import aliases from package.json
  * @param {object} options
  */
-function init(options) {
+function init (options) {
   if (typeof options === 'string') {
     options = { base: options }
   }
@@ -137,13 +137,12 @@ function init(options) {
 
   addAliases(aliases)
 
-
   //
   // Register custom module directories (like node_modules)
   //
 
   if (npm_package._moduleDirectories instanceof Array) {
-    npm_package._moduleDirectories.forEach(function(dir) {
+    npm_package._moduleDirectories.forEach(function (dir) {
       if (dir === 'node_modules') return
 
       var module_path = nodePath.join(base, dir)

@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "npm run lint && npm run testonly",
-    "testonly": "mocha test/specs.js",
-    "lint": "eslint src"
+    "testonly": "NODE_ENV=test mocha test/specs.js",
+    "testonly-watch": "NODE_ENV=test mocha -w test/specs.js",
+    "lint": "standard src"
   },
   "bugs": {
     "url": "https://github.com/ilearnio/module-alias/issues"
@@ -36,7 +37,6 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
-    "eslint": "^1.1.0",
     "mocha": "^2.4.5"
   }
 }
