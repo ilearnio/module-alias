@@ -14,7 +14,9 @@ Enough of this madness!
 Just create an alias and do it the right way:
 
 ```js
-require('@deep/module')
+var module = require('@deep/module')
+// Or ES6
+import module from '@deep/module'
 ```
 
 ## Install
