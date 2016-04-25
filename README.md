@@ -32,15 +32,14 @@ Add these lines to your `package.json` (in your application's root)
 ```js
 // Aliases
 "_moduleAliases": {
-  "@root"      : "", // Application's root
+  "@root"      : ".", // Application's root
   "@client"    : "src/client",
-  "@admin"     : "src/client/admin",
   "@deep"      : "src/some/very/deep/directory",
   "@my_module" : "src/some-file.js",
   "something"  : "src/foo", // Or without @. Actually, it could be any string
 }
 
-// Custom modules directory (optional)
+// Custom module directories (optional)
 "_moduleDirectories": ["node_modules_custom"],
 ```
 
@@ -50,13 +49,19 @@ Then add these line at the very main file of your app, before any code
 import 'module-alias/register'
 ```
 
-And you're all set! Now you can do stuff like:
+**And you're all set!** Now you can do stuff like:
 
 ```js
+require('something')
+const module = require('@root/some-module')
+const veryDeepModule = require('@deep/my-module')
+const customModule = require('my_custom_module') // module from `node_modules_custom` directory
+
+// Or ES6
 import 'something'
 import module from '@root/some-module'
 import veryDeepModule from '@deep/my-module'
-import myModule from '@my_module' // module from `node_modules_custom` directory
+import customModule from 'my_custom_module' // module from `node_modules_custom` directory
 ```
 
 ## Advanced usage

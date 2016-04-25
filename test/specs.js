@@ -71,20 +71,20 @@ describe('module-alias', function () {
       base: path.join(__dirname, 'src')
     })
 
-    var src, foo, baz, some, some_module
+    var src, foo, baz, some, someModule
     try {
       src = require('@src/foo')
       foo = require('@foo')
       baz = require('@bar/baz')
       some = require('some/foo')
-      some_module = require('some-module')
+      someModule = require('some-module')
     } catch (e) {}
 
     expect(src).to.equal('Hello from foo')
     expect(foo).to.equal('Hello from foo')
     expect(baz).to.equal('Hello from baz')
     expect(some).to.equal('Hello from foo')
-    expect(some_module).to.equal('Hello from some-module')
+    expect(someModule).to.equal('Hello from some-module')
   })
 
   it('should support forked modules', function () {
