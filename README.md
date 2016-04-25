@@ -46,7 +46,7 @@ Add these lines to your `package.json` (in your application's root)
 Then add these line at the very main file of your app, before any code
 
 ```js
-import 'module-alias/register'
+require('module-alias/register')
 ```
 
 **And you're all set!** Now you can do stuff like:
@@ -74,7 +74,7 @@ If you don't want to modify your `package.json` or you just prefer to set it all
 
 _Examples:_
 ```js
-import moduleAlias from 'module-alias'
+const moduleAlias = require('module-alias')
 
 //
 // Register alias
