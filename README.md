@@ -19,6 +19,8 @@ var module = require('@deep/module')
 import module from '@deep/module'
 ```
 
+**WARNING:** This module should not be used in other npm modules since it modifies the default `require` behavior! It is designed to be used for developing of projects such as web-sites, applications etc.
+
 ## Install
 
 ```
