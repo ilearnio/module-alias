@@ -19,6 +19,14 @@ var module = require('@deep/module')
 import module from '@deep/module'
 ```
 
+It also allows you to register directories that will act just like `node_modules` but with your own private modules, so that you can access them directly:
+
+```js
+require('my_private_module');
+// Or ES6
+import module from 'my_private_module'
+```
+
 **WARNING:** This module should not be used in other npm modules since it modifies the default `require` behavior! It is designed to be used for developing of projects such as web-sites, applications etc.
 
 ## Install
@@ -29,23 +37,22 @@ npm i --save module-alias
 
 ## Usage
 
-Add these lines to your `package.json` (in your application's root)
+Add your custom configuration to your `package.json` (in your application's root)
 
 ```js
 // Aliases
 "_moduleAliases": {
   "@root"      : ".", // Application's root
-  "@client"    : "src/client",
-  "@deep"      : "src/some/very/deep/directory",
-  "@my_module" : "src/some-file.js",
+  "@deep"      : "src/some/very/deep/directory/or/file",
+  "@my_module" : "lib/some-file.js",
   "something"  : "src/foo", // Or without @. Actually, it could be any string
 }
 
-// Custom module directories (optional)
+// Custom module directories, just like `node_modules` but with your private modules (optional)
 "_moduleDirectories": ["node_modules_custom"],
 ```
 
-Then add these line at the very main file of your app, before any code
+Then add this line at the very main file of your app, before any code
 
 ```js
 require('module-alias/register')
@@ -57,13 +64,13 @@ require('module-alias/register')
 require('something')
 const module = require('@root/some-module')
 const veryDeepModule = require('@deep/my-module')
-const customModule = require('my_custom_module') // module from `node_modules_custom` directory
+const customModule = require('my_private_module') // module from `node_modules_custom` directory
 
 // Or ES6
 import 'something'
 import module from '@root/some-module'
 import veryDeepModule from '@deep/my-module'
-import customModule from 'my_custom_module' // module from `node_modules_custom` directory
+import customModule from 'my_private_module' // module from `node_modules_custom` directory
 ```
 
 ## Advanced usage
