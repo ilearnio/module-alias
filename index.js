@@ -1,3 +1,5 @@
+'use strict'
+
 var Module = require('module').Module
 var nodePath = require('path')
 
@@ -18,7 +20,7 @@ Module._nodeModulePaths = function (from) {
 }
 
 var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, self) {
+Module._resolveFilename = function (request, parent, isMain) {
   for (var alias in moduleAliases) {
     if (request.indexOf(alias) === 0) {
       request = nodePath.join(
@@ -28,7 +30,7 @@ Module._resolveFilename = function (request, self) {
     }
   }
 
-  return oldResolveFilename.apply(this, arguments)
+  return oldResolveFilename.call(this, request, parent, isMain)
 }
 
 function addPathHelper (path, targetArray) {
