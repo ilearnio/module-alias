@@ -22,7 +22,7 @@ Module._nodeModulePaths = function (from) {
 var oldResolveFilename = Module._resolveFilename
 Module._resolveFilename = function (request, parent, isMain) {
   for (var alias in moduleAliases) {
-    if (request.indexOf(alias) === 0) {
+    if (isPathMatchesAlias(request, alias)) {
       request = nodePath.join(
         moduleAliases[alias],
         request.substr(alias.length)
@@ -31,6 +31,16 @@ Module._resolveFilename = function (request, parent, isMain) {
   }
 
   return oldResolveFilename.call(this, request, parent, isMain)
+}
+
+function isPathMatchesAlias (path, alias) {
+  // Matching /^alias(\/|$)/
+  if (path.indexOf(alias) === 0) {
+    if (path.length === alias.length) return true
+    if (path[alias.length] === '/') return true
+  }
+
+  return false
 }
 
 function addPathHelper (path, targetArray) {
@@ -157,4 +167,5 @@ module.exports = init
 module.exports.addPath = addPath
 module.exports.addAlias = addAlias
 module.exports.addAliases = addAliases
+module.exports.isPathMatchesAlias = isPathMatchesAlias
 module.exports.reset = reset

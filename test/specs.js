@@ -44,6 +44,17 @@ describe('module-alias', function () {
     expect(baz).to.be.null
   })
 
+  it('should match aliases', function () {
+    expect(moduleAlias.isPathMatchesAlias('one/three', 'one')).to.be.true
+    expect(moduleAlias.isPathMatchesAlias('one/three', 'one')).to.be.true
+    expect(moduleAlias.isPathMatchesAlias('/one/three', '/one')).to.be.true
+  })
+
+  it('should not match aliases', function () {
+    expect(moduleAlias.isPathMatchesAlias('one-two/three', 'one')).to.be.false
+    expect(moduleAlias.isPathMatchesAlias('/one-two/three', '/one')).to.be.false
+  })
+
   it('should register multiple aliases (addAliases)', function () {
     moduleAlias.addAliases({
       '@src': path.join(__dirname, 'src'),

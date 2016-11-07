@@ -1,9 +1,9 @@
 {
   "name": "module-alias",
   "description": "Create aliases of directories and register custom module paths in NodeJS like a boss!",
-  "version": "1.0.10",
+  "version": "2.0.0",
   "author": {
-    "name": "Nikita Gavrilov",
+    "name": "Nick Gavrilov",
     "email": "artnikpro@gmail.com"
   },
   "scripts": {
