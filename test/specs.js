@@ -103,7 +103,7 @@ describe('module-alias', function () {
     expect(require('hello-world-classic')).to.be.function
   })
 
-  it('should handle mocha test', () => {
+  it('should handle mocha test', function () {
     const result = execSync('mocha ' + path.join(__dirname, '/src/mocha/test.js'))
     expect(result.toString('utf8')).to.match(/1 passing/)
   })
