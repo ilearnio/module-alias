@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 var expect = require('chai').expect
-var execSync = require('child_process').execSync
+var exec = require('child_process').exec
 var path = require('path')
 var moduleAlias = require('..')
 
@@ -103,8 +103,10 @@ describe('module-alias', function () {
     expect(require('hello-world-classic')).to.be.function
   })
 
-  it('should handle mocha test', function () {
-    const result = execSync('mocha ' + path.join(__dirname, '/src/mocha/test.js'))
-    expect(result.toString('utf8')).to.match(/1 passing/)
+  it('should handle mocha test', function (done) {
+    exec('mocha ' + path.join(__dirname, '/src/mocha/test.js'), function (_, result) {
+      expect(result.toString('utf8')).to.match(/1 passing/)
+      done()
+    })
   })
 })
