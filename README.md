@@ -27,7 +27,7 @@ require('my_private_module');
 import module from 'my_private_module'
 ```
 
-**WARNING:** This module should not be used in other npm modules since it modifies the default `require` behavior! It is designed to be used for developing of projects such as web-sites, applications etc.
+**WARNING:** This module should not be used in other npm modules since it modifies the default `require` behavior! It is designed to be used for development of final projects i.e. web-sites, applications etc.
 
 ## Install
 
