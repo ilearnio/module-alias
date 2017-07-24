@@ -109,4 +109,20 @@ describe('module-alias', function () {
       done()
     })
   })
+
+  it('should match longest alias first', function () {
+    moduleAlias.addAliases({
+      'react-dom': path.join(__dirname, 'src/bar/baz'),
+      'react-dom/server': path.join(__dirname, 'src/foo')
+    })
+
+    var bar, src
+    try {
+      bar = require('react-dom')
+      src = require('react-dom/server')
+    } catch (e) {}
+
+    expect(bar).to.equal('Hello from baz')
+    expect(src).to.equal('Hello from foo')
+  })
 })

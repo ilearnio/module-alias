@@ -5,6 +5,7 @@ var nodePath = require('path')
 
 var modulePaths = []
 var moduleAliases = {}
+var moduleAliasNames = [];
 
 var oldNodeModulePaths = Module._nodeModulePaths
 Module._nodeModulePaths = function (from) {
@@ -21,12 +22,15 @@ Module._nodeModulePaths = function (from) {
 
 var oldResolveFilename = Module._resolveFilename
 Module._resolveFilename = function (request, parent, isMain) {
-  for (var alias in moduleAliases) {
+  for (var i = moduleAliasNames.length; i-- > 0;) {
+    var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
       request = nodePath.join(
         moduleAliases[alias],
         request.substr(alias.length)
       )
+      // Only use the first match
+      break
     }
   }
 
@@ -35,12 +39,9 @@ Module._resolveFilename = function (request, parent, isMain) {
 
 function isPathMatchesAlias (path, alias) {
   // Matching /^alias(\/|$)/
-  if (path.indexOf(alias) === 0) {
-    if (path.length === alias.length) return true
-    if (path[alias.length] === '/') return true
-  }
-
-  return false
+  return  path.indexOf(alias) === 0
+      && (path.length === alias.length
+        || path[alias.length] === '/')
 }
 
 function addPathHelper (path, targetArray) {
@@ -86,6 +87,9 @@ function addAliases (aliases) {
 
 function addAlias (alias, target) {
   moduleAliases[alias] = target
+  // Cost of sorting is lower here than during resolution
+  moduleAliasNames = Object.keys(moduleAliases)
+  moduleAliasNames.sort()
 }
 
 /**
