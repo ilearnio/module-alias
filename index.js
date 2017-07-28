@@ -39,9 +39,12 @@ Module._resolveFilename = function (request, parent, isMain) {
 
 function isPathMatchesAlias (path, alias) {
   // Matching /^alias(\/|$)/
-  return  path.indexOf(alias) === 0
-      && (path.length === alias.length
-        || path[alias.length] === '/')
+  if (path.indexOf(alias) === 0) {
+    if (path.length === alias.length) return true
+    if (path[alias.length] === '/') return true
+  }
+
+  return false
 }
 
 function addPathHelper (path, targetArray) {
@@ -136,7 +139,7 @@ function init (options) {
   }
 
   if (typeof npmPackage !== 'object') {
-    throw Error('Unable to read ' + base + '/package.json')
+    throw new Error('Unable to read ' + base + '/package.json')
   }
 
   //
