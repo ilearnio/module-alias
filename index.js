@@ -131,15 +131,16 @@ function init (options) {
   var base = nodePath.resolve(
     options.base || nodePath.join(__dirname, '../..')
   )
+  var packagePath = base.replace(/\/package\.json$/, '') + '/package.json'
 
   try {
-    var npmPackage = require(base + '/package.json')
+    var npmPackage = require(packagePath)
   } catch (e) {
     // Do nothing
   }
 
   if (typeof npmPackage !== 'object') {
-    throw new Error('Unable to read ' + base + '/package.json')
+    throw new Error('Unable to read ' + packagePath)
   }
 
   //
