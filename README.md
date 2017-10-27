@@ -127,8 +127,7 @@ module.exports = {
   resolve: {
     root: __dirname,
     alias: npm_package._moduleAliases || {},
-    extensions: ['', '.js', '.jsx'],
-    modulesDirectories: npm_package._moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
+    modules: npm_package._moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
   }
 }
 ```
