@@ -1,6 +1,12 @@
 'use strict'
 
-var Module = require('module').Module
+var BuiltinModule = require('module')
+
+// Guard against poorly mocked module constructors
+var Module = module.constructor.length > 1
+  ? module.constructor
+  : BuiltinModule
+
 var nodePath = require('path')
 
 var modulePaths = []
