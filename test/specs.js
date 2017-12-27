@@ -99,6 +99,18 @@ describe('module-alias', function () {
     expect(someModule).to.equal('Hello from some-module')
   })
 
+  it('should import settings from different section of package.json', function () {
+      moduleAlias({
+          base: path.join(__dirname, 'src'),
+          moduleAliases: "_testModuleAliases"
+      })
+      var test
+      try {
+          test = require('@test')
+      } catch (e) {}
+      expect(test).to.equal('Hello from test')
+  })
+
   it('should support forked modules', function () {
     expect(require('hello-world-classic')).to.be.function
   })

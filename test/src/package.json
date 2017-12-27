@@ -6,5 +6,8 @@
     "@foo": "foo/index.js",
     "@bar": "bar",
     "some/foo": "foo"
+  },
+  "_testModuleAliases": {
+    "@test": "test/index.js"
   }
 }
