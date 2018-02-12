@@ -1,7 +1,7 @@
 {
   "name": "module-alias",
   "description": "Create aliases of directories and register custom module paths in NodeJS like a boss!",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "author": {
     "name": "Nick Gavrilov",
     "email": "artnikpro@gmail.com"
@@ -28,7 +28,8 @@
   "files": [
     "index.js",
     "register.js",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
