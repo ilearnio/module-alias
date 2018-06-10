@@ -11,7 +11,7 @@ var nodePath = require('path')
 
 var modulePaths = []
 var moduleAliases = {}
-var moduleAliasNames = [];
+var moduleAliasNames = []
 
 var oldNodeModulePaths = Module._nodeModulePaths
 Module._nodeModulePaths = function (from) {

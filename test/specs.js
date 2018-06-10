@@ -13,7 +13,7 @@ describe('module-alias', function () {
     try {
       value = require('foo')
     } catch (e) {}
-    expect(value).to.not.ok
+    expect(value).to.equal(undefined)
 
     moduleAlias.addPath(path.join(__dirname, 'src'))
     try {
@@ -41,19 +41,19 @@ describe('module-alias', function () {
       baz = require('@baz')
     } catch (e) {}
 
-    expect(foo).to.be.null
-    expect(baz).to.be.null
+    expect(foo).to.equal(null)
+    expect(baz).to.equal(null)
   })
 
   it('should match aliases', function () {
-    expect(moduleAlias.isPathMatchesAlias('@foo/bar', '@foo')).to.be.true
-    expect(moduleAlias.isPathMatchesAlias('one/three', 'one')).to.be.true
-    expect(moduleAlias.isPathMatchesAlias('/one/three', '/one')).to.be.true
+    expect(moduleAlias.isPathMatchesAlias('@foo/bar', '@foo')).to.equal(true)
+    expect(moduleAlias.isPathMatchesAlias('one/three', 'one')).to.equal(true)
+    expect(moduleAlias.isPathMatchesAlias('/one/three', '/one')).to.equal(true)
   })
 
   it('should not match aliases', function () {
-    expect(moduleAlias.isPathMatchesAlias('one-two/three', 'one')).to.be.false
-    expect(moduleAlias.isPathMatchesAlias('/one-two/three', '/one')).to.be.false
+    expect(moduleAlias.isPathMatchesAlias('one-two/three', 'one')).to.equal(false)
+    expect(moduleAlias.isPathMatchesAlias('/one-two/three', '/one')).to.equal(false)
   })
 
   it('should register multiple aliases (addAliases)', function () {
@@ -100,7 +100,7 @@ describe('module-alias', function () {
   })
 
   it('should support forked modules', function () {
-    expect(require('hello-world-classic')).to.be.function
+    expect(typeof require('hello-world-classic')).to.equal('function')
   })
 
   it('should handle mocha test', function (done) {
