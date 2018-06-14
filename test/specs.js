@@ -126,3 +126,52 @@ describe('module-alias', function () {
     expect(src).to.equal('Hello from foo')
   })
 })
+
+describe('Custom handler function', function () {
+  it('should addAlias', () => {
+    moduleAlias.addAlias('@src', function (fromPath, request, alias) {
+      expect(fromPath).to.equal(__filename)
+      expect(request).to.equal('@src/baz')
+      expect(alias).to.equal('@src')
+      return path.join(__dirname, 'src/bar')
+    })
+    expect(require('@src/baz')).to.equal('Hello from baz')
+  })
+
+  it('should addAliases', () => {
+    moduleAlias.addAliases({
+      '@src': function (fromPath, request, alias) {
+        expect(fromPath).to.equal(__filename)
+        expect(request).to.equal('@src/baz')
+        expect(alias).to.equal('@src')
+        return path.join(__dirname, 'src/bar')
+      },
+      '@bar': function (fromPath, request, alias) {
+        expect(fromPath).to.equal(__filename)
+        expect(request).to.equal('@bar/index.js')
+        expect(alias).to.equal('@bar')
+        return path.join(__dirname, 'src/foo')
+      },
+    })
+    expect(require('@src/baz')).to.equal('Hello from baz')
+    expect(require('@bar/index.js')).to.equal('Hello from foo')
+  })
+
+  it('should return npm package', () => {
+    moduleAlias.addAlias('@src', function (fromPath, request, alias) {
+      expect(fromPath).to.equal(__filename)
+      expect(request).to.equal('@src')
+      expect(alias).to.equal('@src')
+      return 'hello-world-classic'
+    })
+    expect(typeof require('@src')).to.equal('function')
+  })
+
+  it('should throw when no path returned', () => {
+    expect(function () {
+      moduleAlias.addAlias('@src', function () {})
+      require('@src')
+    })
+      .to.throw('[module-alias] Expecting custom handler function to return path.')
+  })
+})

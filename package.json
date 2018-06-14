@@ -1,7 +1,7 @@
 {
   "name": "module-alias",
-  "description": "Create aliases of directories and register custom module paths in NodeJS like a boss!",
-  "version": "2.0.6",
+  "description": "Create aliases of directories and register custom module paths",
+  "version": "2.1.0",
   "author": {
     "name": "Nick Gavrilov",
     "email": "artnikpro@gmail.com"
@@ -35,7 +35,6 @@
     "type": "git",
     "url": "git+https://github.com/ilearnio/module-alias.git"
   },
-  "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
     "hello-world-classic": "ilearnio/hello-world-classic",

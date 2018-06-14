@@ -27,20 +27,26 @@ Module._nodeModulePaths = function (from) {
 }
 
 var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parent, isMain) {
+Module._resolveFilename = function (request, parentModule, isMain) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
-      request = nodePath.join(
-        moduleAliases[alias],
-        request.substr(alias.length)
-      )
+      var aliasTarget = moduleAliases[alias]
+      // Custom function handler
+      if (typeof moduleAliases[alias] === 'function') {
+        var fromPath = parentModule.filename
+        aliasTarget = moduleAliases[alias](fromPath, request, alias)
+        if (!aliasTarget || typeof aliasTarget !== 'string') {
+          throw new Error('[module-alias] Expecting custom handler function to return path.')
+        }
+      }
+      request = nodePath.join(aliasTarget, request.substr(alias.length))
       // Only use the first match
       break
     }
   }
 
-  return oldResolveFilename.call(this, request, parent, isMain)
+  return oldResolveFilename.call(this, request, parentModule, isMain)
 }
 
 function isPathMatchesAlias (path, alias) {
