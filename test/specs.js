@@ -128,7 +128,7 @@ describe('module-alias', function () {
 })
 
 describe('Custom handler function', function () {
-  it('should addAlias', () => {
+  it('should addAlias', function () {
     moduleAlias.addAlias('@src', function (fromPath, request, alias) {
       expect(fromPath).to.equal(__filename)
       expect(request).to.equal('@src/baz')
@@ -138,7 +138,7 @@ describe('Custom handler function', function () {
     expect(require('@src/baz')).to.equal('Hello from baz')
   })
 
-  it('should addAliases', () => {
+  it('should addAliases', function () {
     moduleAlias.addAliases({
       '@src': function (fromPath, request, alias) {
         expect(fromPath).to.equal(__filename)
@@ -157,7 +157,7 @@ describe('Custom handler function', function () {
     expect(require('@bar/index.js')).to.equal('Hello from foo')
   })
 
-  it('should return npm package', () => {
+  it('should return npm package', function () {
     moduleAlias.addAlias('@src', function (fromPath, request, alias) {
       expect(fromPath).to.equal(__filename)
       expect(request).to.equal('@src')
@@ -167,7 +167,7 @@ describe('Custom handler function', function () {
     expect(typeof require('@src')).to.equal('function')
   })
 
-  it('should throw when no path returned', () => {
+  it('should throw when no path returned', function () {
     expect(function () {
       moduleAlias.addAlias('@src', function () {})
       require('@src')
