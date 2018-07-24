@@ -9,6 +9,7 @@ var Module = module.constructor.length > 1
 
 var nodePath = require('path')
 
+var defaultNamespace = ''
 var modulePaths = []
 var moduleAliases = {}
 var moduleAliasNames = []
@@ -31,11 +32,14 @@ Module._resolveFilename = function (request, parentModule, isMain) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
-      var aliasTarget = moduleAliases[alias]
+      var namespace = parentModule.paths.find(function (path) {
+        return moduleAliases[path.replace(/^(.+)[\\/]node_modules$/, '$1')]
+      }).replace(/^(.+)[\\/]node_modules$/, '$1')
+      var aliasTarget = moduleAliases[namespace][alias]
       // Custom function handler
-      if (typeof moduleAliases[alias] === 'function') {
+      if (typeof moduleAliases[namespace][alias] === 'function') {
         var fromPath = parentModule.filename
-        aliasTarget = moduleAliases[alias](fromPath, request, alias)
+        aliasTarget = moduleAliases[namespace][alias](fromPath, request, alias)
         if (!aliasTarget || typeof aliasTarget !== 'string') {
           throw new Error('[module-alias] Expecting custom handler function to return path.')
         }
@@ -94,16 +98,24 @@ function addPath (path) {
   }
 }
 
-function addAliases (aliases) {
+function addAliases (aliases, namespace) {
   for (var alias in aliases) {
-    addAlias(alias, aliases[alias])
+    addAlias(alias, aliases[alias], namespace)
   }
 }
 
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
+function addAlias (alias, target, namespace) {
+  if (!namespace) {
+    namespace = defaultNamespace
+  }
+
+  if (!moduleAliases[namespace]) {
+    moduleAliases[namespace] = {}
+  }
+
+  moduleAliases[namespace][alias] = target
   // Cost of sorting is lower here than during resolution
-  moduleAliasNames = Object.keys(moduleAliases)
+  moduleAliasNames.push(alias)
   moduleAliasNames.sort()
 }
 
@@ -167,7 +179,13 @@ function init (options) {
     }
   }
 
-  addAliases(aliases)
+  var isNodeModule = base.includes('node_modules')
+
+  if (!isNodeModule) {
+    defaultNamespace = base
+  }
+
+  addAliases(aliases, base)
 
   //
   // Register custom module directories (like node_modules)
