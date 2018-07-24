@@ -27,19 +27,28 @@ Module._nodeModulePaths = function (from) {
   return paths
 }
 
+var getAliasTargetPath = function (alias, namespace) {
+  return moduleAliases[namespace][alias] || moduleAliases[defaultNamespace][alias]
+}
+
 var oldResolveFilename = Module._resolveFilename
 Module._resolveFilename = function (request, parentModule, isMain) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
-      var namespace = parentModule.paths.find(function (path) {
+      var possibleNamespace = parentModule.paths.find(function (path) {
         return moduleAliases[path.replace(/^(.+)[\\/]node_modules$/, '$1')]
-      }).replace(/^(.+)[\\/]node_modules$/, '$1')
-      var aliasTarget = moduleAliases[namespace][alias]
+      })
+      var namespace = (
+        possibleNamespace
+        ? possibleNamespace.replace(/^(.+)[\\/]node_modules$/, '$1')
+        : defaultNamespace
+      )
+      var aliasTarget = getAliasTargetPath(alias, namespace)
       // Custom function handler
-      if (typeof moduleAliases[namespace][alias] === 'function') {
+      if (typeof getAliasTargetPath(alias, namespace) === 'function') {
         var fromPath = parentModule.filename
-        aliasTarget = moduleAliases[namespace][alias](fromPath, request, alias)
+        aliasTarget = getAliasTargetPath(alias, namespace)(fromPath, request, alias)
         if (!aliasTarget || typeof aliasTarget !== 'string') {
           throw new Error('[module-alias] Expecting custom handler function to return path.')
         }
@@ -137,6 +146,7 @@ function reset () {
 
   modulePaths = []
   moduleAliases = {}
+  moduleAliasNames = []
 }
 
 /**
