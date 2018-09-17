@@ -139,20 +139,29 @@ function init (options) {
   options = options || {}
 
   // There is probably 99% chance that the project root directory in located
-  // above the node_modules directory
-  var base = nodePath.resolve(
-    options.base || nodePath.join(__dirname, '../..')
-  )
-  var packagePath = base.replace(/\/package\.json$/, '') + '/package.json'
+  // above the node_modules directory,
+  // Or that package.json is in the node process' current working directory (when
+  // running a package manager script, e.g. `yarn start` / `npm run start`)
+  var candidatePackagePath = [
+    (options.base || '').replace(/\/package\.json$/, ''),
+    nodePath.join(__dirname, '../..'),
+    process.cwd()
+  ]
 
-  try {
-    var npmPackage = require(packagePath)
-  } catch (e) {
-    // Do nothing
+  var npmPackage
+  var base
+  for (var i in candidatePackagePath) {
+    try {
+      base = candidatePackagePath[i]
+      npmPackage = require(base + '/package.json')
+      break
+    } catch (e) {
+      // noop
+    }
   }
 
   if (typeof npmPackage !== 'object') {
-    throw new Error('Unable to read ' + packagePath)
+    throw new Error('Unable to read any of [' + candidatePackagePath.map(function(path) { return base + '/package.json'}).join(', ')  + ']')
   }
 
   //
