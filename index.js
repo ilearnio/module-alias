@@ -183,9 +183,23 @@ function init (options) {
   }
 }
 
+// Retrieve a path by specifying a registered alias
+function getAliasPath(alias) {
+    if (!moduleAliases[alias]) {
+        throw new Error('[' + alias + ']: alias does not exist');
+    }
+
+    if (typeof alias === 'string') {
+        return moduleAliases[alias];
+    } else {
+        throw new Error('[' + alias + ']: Is not of type string');
+    }
+}
+
 module.exports = init
 module.exports.addPath = addPath
 module.exports.addAlias = addAlias
 module.exports.addAliases = addAliases
 module.exports.isPathMatchesAlias = isPathMatchesAlias
 module.exports.reset = reset
+module.exports.getAliasPath = getAliasPath
