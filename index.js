@@ -138,22 +138,25 @@ function init (options) {
 
   options = options || {}
 
-  // There is probably 99% chance that the project root directory in located
-  // above the node_modules directory,
-  // Or that package.json is in the node process' current working directory (when
-  // running a package manager script, e.g. `yarn start` / `npm run start`)
-  var candidatePackagePath = [
-    (options.base || '').replace(/\/package\.json$/, ''),
-    nodePath.join(__dirname, '../..'),
-    process.cwd()
-  ]
+
+  var candidatePackagePaths
+  if(options.base) {
+    candidatePackagePaths = [options.base.replace(/\/package\.json$/, '')]
+  } else {
+    // There is probably 99% chance that the project root directory in located
+    // above the node_modules directory,
+    // Or that package.json is in the node process' current working directory (when
+    // running a package manager script, e.g. `yarn start` / `npm run start`)
+    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
+  }
 
   var npmPackage
   var base
-  for (var i in candidatePackagePath) {
+  for (var i in candidatePackagePaths) {
     try {
-      base = candidatePackagePath[i]
-      npmPackage = require(base + '/package.json')
+      base = candidatePackagePaths[i]
+
+      npmPackage = require(nodePath.join(base, 'package.json'))
       break
     } catch (e) {
       // noop
@@ -161,7 +164,8 @@ function init (options) {
   }
 
   if (typeof npmPackage !== 'object') {
-    throw new Error('Unable to read any of [' + candidatePackagePath.map(function(path) { return base + '/package.json'}).join(', ')  + ']')
+    var pathString = candidatePackagePaths.join('\n, ')
+    throw new Error('Unable to find package.json in any of:\n[' + pathString  + ']')
   }
 
   //

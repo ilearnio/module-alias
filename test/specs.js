@@ -78,25 +78,47 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
-  it('should import settings from package.json', function () {
-    moduleAlias({
-      base: path.join(__dirname, 'src')
+  describe('importing settings from package.json', () => {
+    var baseWorkingDirectory
+    beforeEach(function() {
+      baseWorkingDirectory = process.cwd()
     })
 
-    var src, foo, baz, some, someModule
-    try {
-      src = require('@src/foo')
-      foo = require('@foo')
-      baz = require('@bar/baz')
-      some = require('some/foo')
-      someModule = require('some-module')
-    } catch (e) {}
+    afterEach(function(){
+      process.chdir(baseWorkingDirectory)
+    })
 
-    expect(src).to.equal('Hello from foo')
-    expect(foo).to.equal('Hello from foo')
-    expect(baz).to.equal('Hello from baz')
-    expect(some).to.equal('Hello from foo')
-    expect(someModule).to.equal('Hello from some-module')
+    function expectAliasesToBeImported() {
+      var src, foo, baz, some, someModule
+      try {
+        src = require('@src/foo')
+        foo = require('@foo')
+        baz = require('@bar/baz')
+        some = require('some/foo')
+        someModule = require('some-module')
+      } catch (e) {}
+
+      expect(src).to.equal('Hello from foo')
+      expect(foo).to.equal('Hello from foo')
+      expect(baz).to.equal('Hello from baz')
+      expect(some).to.equal('Hello from foo')
+      expect(someModule).to.equal('Hello from some-module')
+    }
+
+    it('should import settings from user-defined base path', function () {
+      moduleAlias({
+        base: path.join(__dirname, 'src')
+      })
+
+      expectAliasesToBeImported()
+    })
+
+    it('should import default settings from process.cwd()', function() {
+      process.chdir(path.join(__dirname, 'src'))
+      moduleAlias()
+
+      expectAliasesToBeImported()
+    })
   })
 
   it('should support forked modules', function () {
