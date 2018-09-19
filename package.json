@@ -10,7 +10,7 @@
     "test": "npm run lint && npm run testonly",
     "testonly": "NODE_ENV=test mocha test/specs.js",
     "testonly-watch": "NODE_ENV=test mocha -w test/specs.js",
-    "lint": "standard src"
+    "lint": "standard"
   },
   "bugs": {
     "url": "https://github.com/ilearnio/module-alias/issues"
