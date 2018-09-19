@@ -78,17 +78,17 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
-  describe('importing settings from package.json', function() {
+  describe('importing settings from package.json', function () {
     var baseWorkingDirectory
-    beforeEach(function() {
+    beforeEach(function () {
       baseWorkingDirectory = process.cwd()
     })
 
-    afterEach(function(){
+    afterEach(function () {
       process.chdir(baseWorkingDirectory)
     })
 
-    function expectAliasesToBeImported() {
+    function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
       try {
         src = require('@src/foo')
@@ -113,7 +113,7 @@ describe('module-alias', function () {
       expectAliasesToBeImported()
     })
 
-    it('should import default settings from process.cwd()', function() {
+    it('should import default settings from process.cwd()', function () {
       process.chdir(path.join(__dirname, 'src'))
       moduleAlias()
 

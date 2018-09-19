@@ -138,9 +138,8 @@ function init (options) {
 
   options = options || {}
 
-
   var candidatePackagePaths
-  if(options.base) {
+  if (options.base) {
     candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
   } else {
     // There is probably 99% chance that the project root directory in located
@@ -165,7 +164,7 @@ function init (options) {
 
   if (typeof npmPackage !== 'object') {
     var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString  + ']')
+    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
   }
 
   //
