@@ -38,6 +38,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "hello-world-classic": "ilearnio/hello-world-classic",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "standard": "^12.0.1"
   }
 }
