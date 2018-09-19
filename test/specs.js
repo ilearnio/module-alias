@@ -78,7 +78,7 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
-  describe('importing settings from package.json', () => {
+  describe('importing settings from package.json', function() {
     var baseWorkingDirectory
     beforeEach(function() {
       baseWorkingDirectory = process.cwd()
