@@ -3,10 +3,13 @@
 var expect = require('chai').expect
 var exec = require('child_process').exec
 var path = require('path')
-var moduleAlias = require('..')
+var fs = require('fs')
+var moduleAlias
 
 describe('module-alias', function () {
-  afterEach(moduleAlias.reset)
+  beforeEach(function () { moduleAlias = require('..') })
+
+  afterEach(function () { moduleAlias.reset() })
 
   it('should register path (addPath)', function () {
     var value
@@ -79,15 +82,6 @@ describe('module-alias', function () {
   })
 
   describe('importing settings from package.json', function () {
-    var baseWorkingDirectory
-    beforeEach(function () {
-      baseWorkingDirectory = process.cwd()
-    })
-
-    afterEach(function () {
-      process.chdir(baseWorkingDirectory)
-    })
-
     function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
       try {
@@ -113,11 +107,49 @@ describe('module-alias', function () {
       expectAliasesToBeImported()
     })
 
-    it('should import default settings from process.cwd()', function () {
-      process.chdir(path.join(__dirname, 'src'))
-      moduleAlias()
+    describe('with process.cwd()', function () {
+      var baseWorkingDirectory
+      beforeEach(function () {
+        baseWorkingDirectory = process.cwd()
+      })
 
-      expectAliasesToBeImported()
+      afterEach(function () {
+        process.chdir(baseWorkingDirectory)
+      })
+
+      it('should import default settings from process.cwd()/package.json', function () {
+        process.chdir(path.join(__dirname, 'src'))
+        moduleAlias()
+
+        expectAliasesToBeImported()
+      })
+    })
+
+    describe('by looking up __dirname/../../', function () {
+      var moduleAliasDir = path.resolve(
+        '.',
+        'test',
+        'src',
+        'node_modules',
+        'module-alias'
+      )
+      var moduleAliasLocation = path.resolve(moduleAliasDir, 'index.js')
+
+      beforeEach(function () {
+        var indexJs = fs.readFileSync(path.resolve('.', 'index.js'))
+        fs.writeFileSync(moduleAliasLocation, indexJs)
+      })
+
+      afterEach(function () {
+        fs.unlinkSync(moduleAliasLocation)
+      })
+
+      it('should import default settings from ../../package.json', function () {
+        moduleAlias = require(moduleAliasDir)
+        moduleAlias()
+
+        expectAliasesToBeImported()
+      })
     })
   })
 
