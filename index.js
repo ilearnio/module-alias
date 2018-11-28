@@ -115,8 +115,8 @@ function addPath (path) {
 }
 
 /**
- * Adds an array of aliases to module.
  * @param {*} aliases 
+ * ModuleAlias.addAliases({
  */
 function addAliases (aliases) {
   for (var alias in aliases) {
@@ -125,9 +125,11 @@ function addAliases (aliases) {
 }
 
 /**
- * Adds alias to module.
  * @param {*} alias 
  * @param {*} target 
+ * Register a single alias.
+ * @param {string} alias Alias
+ * @param {string} target Target path
  */
 function addAlias (alias, target) {
   moduleAliases[alias] = target
