@@ -51,8 +51,8 @@ Module._resolveFilename = function (request, parentModule, isMain) {
 
 /**
  * Determines if path matches alias.
- * @param {string} path 
- * @param {string} alias 
+ * @param {string} path
+ * @param {string} alias
  * @returns {boolean}
  */
 function isPathMatchesAlias (path, alias) {
@@ -67,8 +67,8 @@ function isPathMatchesAlias (path, alias) {
 
 /**
  * Adds path to paths array.
- * @param {*} path 
- * @param {*} targetArray 
+ * @param {*} path
+ * @param {*} targetArray
  */
 function addPathHelper (path, targetArray) {
   path = nodePath.normalize(path)
@@ -79,8 +79,8 @@ function addPathHelper (path, targetArray) {
 
 /**
  * Removes path from paths array.
- * @param {*} path 
- * @param {*} targetArray 
+ * @param {*} path
+ * @param {*} targetArray
  */
 function removePathHelper (path, targetArray) {
   if (targetArray) {
@@ -92,8 +92,10 @@ function removePathHelper (path, targetArray) {
 }
 
 /**
- * Adds search path for module and its parents.
- * @param {string} path 
+ * Register custom modules directory.
+ * @param {string} path
+ * @example
+ * ModuleAlias.addPath('/src/utils')
  */
 function addPath (path) {
   var parent
@@ -115,8 +117,13 @@ function addPath (path) {
 }
 
 /**
- * @param {*} aliases 
+ * Register multiple aliases.
+ * @param {{string: string}} aliases
+ * @example
  * ModuleAlias.addAliases({
+ * 'Components': '/src/components',
+ * 'Utils': '/src/utils'
+ * })
  */
 function addAliases (aliases) {
   for (var alias in aliases) {
@@ -125,11 +132,10 @@ function addAliases (aliases) {
 }
 
 /**
- * @param {*} alias 
- * @param {*} target 
  * Register a single alias.
  * @param {string} alias Alias
  * @param {string} target Target path
+ * @example ModuleAlias.addAlias('Utils', '/src/utils')
  */
 function addAlias (alias, target) {
   moduleAliases[alias] = target
@@ -169,8 +175,8 @@ function init (options) {
 
   options = options || {}
 
-  // There is probably 99% chance that the project root directory in located
-  // above the node_modules directory
+  // TODO: Find a better way to locate root directory
+  // The project root directory is probably located above the node_modules directory
   var base = nodePath.resolve(
     options.base || nodePath.join(__dirname, '../..')
   )
