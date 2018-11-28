@@ -49,6 +49,12 @@ Module._resolveFilename = function (request, parentModule, isMain) {
   return oldResolveFilename.call(this, request, parentModule, isMain)
 }
 
+/**
+ * Determines if path matches alias.
+ * @param {string} path 
+ * @param {string} alias 
+ * @returns {boolean}
+ */
 function isPathMatchesAlias (path, alias) {
   // Matching /^alias(\/|$)/
   if (path.indexOf(alias) === 0) {
@@ -59,6 +65,11 @@ function isPathMatchesAlias (path, alias) {
   return false
 }
 
+/**
+ * Adds path to paths array.
+ * @param {*} path 
+ * @param {*} targetArray 
+ */
 function addPathHelper (path, targetArray) {
   path = nodePath.normalize(path)
   if (targetArray && targetArray.indexOf(path) === -1) {
@@ -66,6 +77,11 @@ function addPathHelper (path, targetArray) {
   }
 }
 
+/**
+ * Removes path from paths array.
+ * @param {*} path 
+ * @param {*} targetArray 
+ */
 function removePathHelper (path, targetArray) {
   if (targetArray) {
     var index = targetArray.indexOf(path)
@@ -75,6 +91,10 @@ function removePathHelper (path, targetArray) {
   }
 }
 
+/**
+ * Adds search path for module and its parents.
+ * @param {string} path 
+ */
 function addPath (path) {
   var parent
   path = nodePath.normalize(path)
@@ -94,12 +114,21 @@ function addPath (path) {
   }
 }
 
+/**
+ * Adds an array of aliases to module.
+ * @param {*} aliases 
+ */
 function addAliases (aliases) {
   for (var alias in aliases) {
     addAlias(alias, aliases[alias])
   }
 }
 
+/**
+ * Adds alias to module.
+ * @param {*} alias 
+ * @param {*} target 
+ */
 function addAlias (alias, target) {
   moduleAliases[alias] = target
   // Cost of sorting is lower here than during resolution
@@ -108,9 +137,9 @@ function addAlias (alias, target) {
 }
 
 /**
- * Reset any changes maded (resets all registered aliases
- * and custom module directories)
- * The function is undocumented and for testing purposes only
+ * Resets all changes made (registered aliases and module directories).
+ * For testing purposes only.
+ * @private
  */
 function reset () {
   // Reset all changes in paths caused by addPath function
@@ -128,8 +157,8 @@ function reset () {
 }
 
 /**
- * Import aliases from package.json
- * @param {object} options
+ * Imports aliases from package.json.
+ * @param {(string|{base:string})} [options] Package.json to import settings from.
  */
 function init (options) {
   if (typeof options === 'string') {
