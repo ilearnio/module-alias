@@ -9,10 +9,16 @@ var Module = module.constructor.length > 1
 
 var nodePath = require('path')
 
+/** @type {Array.<string>} */
 var modulePaths = []
+
+/** @type {{[alias: string]: (string|RequireHandlerFunction)}} */
 var moduleAliases = {}
+
+/** @type {Array.<string>} */
 var moduleAliasNames = []
 
+// Tell node to search for modules in specified directories
 var oldNodeModulePaths = Module._nodeModulePaths
 Module._nodeModulePaths = function (from) {
   var paths = oldNodeModulePaths.call(this, from)
@@ -67,8 +73,8 @@ function isPathMatchesAlias (path, alias) {
 
 /**
  * Adds path to paths array.
- * @param {*} path
- * @param {*} targetArray
+ * @param {string} path
+ * @param {Array.<string>} targetArray
  */
 function addPathHelper (path, targetArray) {
   path = nodePath.normalize(path)
@@ -79,8 +85,8 @@ function addPathHelper (path, targetArray) {
 
 /**
  * Removes path from paths array.
- * @param {*} path
- * @param {*} targetArray
+ * @param {string} path
+ * @param {Array.<string>} targetArray
  */
 function removePathHelper (path, targetArray) {
   if (targetArray) {
@@ -134,11 +140,11 @@ function addAliases (aliases) {
 /**
  * Register a single alias.
  * @param {string} alias Alias
- * @param {string} target Target path
+ * @param {string} path Target path
  * @example ModuleAlias.addAlias('Utils', '/src/utils')
  */
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
+function addAlias (alias, path) {
+  moduleAliases[alias] = path
   // Cost of sorting is lower here than during resolution
   moduleAliasNames = Object.keys(moduleAliases)
   moduleAliasNames.sort()
@@ -166,7 +172,7 @@ function reset () {
 
 /**
  * Imports aliases from package.json.
- * @param {(string|{base:string})} [options] Package.json to import settings from.
+ * @param {(string|Options)} [options]
  */
 function init (options) {
   if (typeof options === 'string') {
@@ -219,6 +225,19 @@ function init (options) {
     })
   }
 }
+
+/**
+ * @typedef {Object} Options
+ * @prop {string} [base] Path to package.json to import aliases from.
+ */
+
+/**
+ * @callback RequireHandlerFunction
+ * @param {string} fromPath Path to the file that require is called from.
+ * @param {string} request Path passed into require.
+ * @param {string} alias The alias passed into addAlias.
+ * @return {string} Target path to require from.
+ */
 
 module.exports = init
 module.exports.addPath = addPath
