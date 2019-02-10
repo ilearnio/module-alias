@@ -9,10 +9,16 @@ var Module = module.constructor.length > 1
 
 var nodePath = require('path')
 
+/** @type {Array.<string>} */
 var modulePaths = []
+
+/** @type {{[alias: string]: (string|RequireHandlerFunction)}} */
 var moduleAliases = {}
+
+/** @type {Array.<string>} */
 var moduleAliasNames = []
 
+// Tell node to search for modules in specified directories
 var oldNodeModulePaths = Module._nodeModulePaths
 Module._nodeModulePaths = function (from) {
   var paths = oldNodeModulePaths.call(this, from)
@@ -49,6 +55,12 @@ Module._resolveFilename = function (request, parentModule, isMain) {
   return oldResolveFilename.call(this, request, parentModule, isMain)
 }
 
+/**
+ * Determines if path matches alias.
+ * @param {string} path
+ * @param {string} alias
+ * @returns {boolean}
+ */
 function isPathMatchesAlias (path, alias) {
   // Matching /^alias(\/|$)/
   if (path.indexOf(alias) === 0) {
@@ -59,6 +71,11 @@ function isPathMatchesAlias (path, alias) {
   return false
 }
 
+/**
+ * Adds path to paths array.
+ * @param {string} path
+ * @param {Array.<string>} targetArray
+ */
 function addPathHelper (path, targetArray) {
   path = nodePath.normalize(path)
   if (targetArray && targetArray.indexOf(path) === -1) {
@@ -66,6 +83,11 @@ function addPathHelper (path, targetArray) {
   }
 }
 
+/**
+ * Removes path from paths array.
+ * @param {string} path
+ * @param {Array.<string>} targetArray
+ */
 function removePathHelper (path, targetArray) {
   if (targetArray) {
     var index = targetArray.indexOf(path)
@@ -75,6 +97,12 @@ function removePathHelper (path, targetArray) {
   }
 }
 
+/**
+ * Register custom modules directory.
+ * @param {string} path
+ * @example
+ * ModuleAlias.addPath('/src/utils')
+ */
 function addPath (path) {
   var parent
   path = nodePath.normalize(path)
@@ -94,23 +122,38 @@ function addPath (path) {
   }
 }
 
+/**
+ * Register multiple aliases.
+ * @param {{string: string}} aliases
+ * @example
+ * ModuleAlias.addAliases({
+ * 'Components': '/src/components',
+ * 'Utils': '/src/utils'
+ * })
+ */
 function addAliases (aliases) {
   for (var alias in aliases) {
     addAlias(alias, aliases[alias])
   }
 }
 
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
+/**
+ * Register a single alias.
+ * @param {string} alias Alias
+ * @param {string} path Target path
+ * @example ModuleAlias.addAlias('Utils', '/src/utils')
+ */
+function addAlias (alias, path) {
+  moduleAliases[alias] = path
   // Cost of sorting is lower here than during resolution
   moduleAliasNames = Object.keys(moduleAliases)
   moduleAliasNames.sort()
 }
 
 /**
- * Reset any changes maded (resets all registered aliases
- * and custom module directories)
- * The function is undocumented and for testing purposes only
+ * Resets all changes made (registered aliases and module directories).
+ * For testing purposes only.
+ * @private
  */
 function reset () {
   // Reset all changes in paths caused by addPath function
@@ -128,8 +171,8 @@ function reset () {
 }
 
 /**
- * Import aliases from package.json
- * @param {object} options
+ * Imports aliases from package.json.
+ * @param {(string|Options)} [options]
  */
 function init (options) {
   if (typeof options === 'string') {
@@ -138,8 +181,8 @@ function init (options) {
 
   options = options || {}
 
-  // There is probably 99% chance that the project root directory in located
-  // above the node_modules directory
+  // TODO: Find a better way to locate root directory
+  // The project root directory is probably located above the node_modules directory
   var base = nodePath.resolve(
     options.base || nodePath.join(__dirname, '../..')
   )
@@ -182,6 +225,19 @@ function init (options) {
     })
   }
 }
+
+/**
+ * @typedef {Object} Options
+ * @prop {string} [base] Path to package.json to import aliases from.
+ */
+
+/**
+ * @callback RequireHandlerFunction
+ * @param {string} fromPath Path to the file that require is called from.
+ * @param {string} request Path passed into require.
+ * @param {string} alias The alias passed into addAlias.
+ * @return {string} Target path to require from.
+ */
 
 module.exports = init
 module.exports.addPath = addPath
