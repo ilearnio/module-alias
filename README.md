@@ -153,3 +153,7 @@ In order to register a custom modules path (`addPath`) it modifies the internal 
 [npm-url]: https://npmjs.org/package/module-alias
 [travis-image]: https://img.shields.io/travis/ilearnio/module-alias/master.svg
 [travis-url]: https://travis-ci.org/ilearnio/module-alias
+
+## Refactor your code (for already existing projects)
+
+If you are using this on an existing project, you can use [relative-to-alias](https://github.com/s-yadav/relative-to-alias) to refactor your code to start using aliases.
