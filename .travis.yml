@@ -4,4 +4,3 @@ node_js:
   - stable
   - '5.0'
   - '0.10'
-before_install: npm i -g standard
