@@ -205,7 +205,7 @@ describe('Custom handler function', function () {
         expect(request).to.equal('@bar/index.js')
         expect(alias).to.equal('@bar')
         return path.join(__dirname, 'src/foo')
-      },
+      }
     })
     expect(require('@src/baz')).to.equal('Hello from baz')
     expect(require('@bar/index.js')).to.equal('Hello from foo')
