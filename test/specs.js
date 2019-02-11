@@ -175,28 +175,26 @@ describe('Custom handler function', function () {
       .to.throw('[module-alias] Expecting custom handler function to return path.')
   })
 
-    it('should return a path matching the alias', function () {
-        var expected = path.join(__dirname, 'src/bar/baz');
-        moduleAlias.addAlias('@root', expected);
+  it('should return a path matching the alias', function () {
+      var expected = path.join(__dirname, 'src/bar/baz');
+      moduleAlias.addAlias('@root', expected);
 
-        var rootPath = moduleAlias.getAliasPath('@root');
-        expect(rootPath)
-            .to.equal(expected);
-    })
+      var rootPath = moduleAlias.getAliasPath('@root');
+      expect(rootPath)
+          .to.equal(expected);
+  })
 
-    it('should throw when alias does not exist', function () {
-        var expected = '[@randomPath]: alias does not exist';
-        expect(function () {
-            moduleAlias.getAliasPath('@randomPath');
-        })
-            .to.throw(expected);
-    })
+  it('should throw when alias does not exist', function () {
+      var expected = '[@randomPath]: alias does not exist';
+      expect(function () {
+          moduleAlias.getAliasPath('@randomPath');
+      }).to.throw(expected);
+  })
 
-    it('should throw when alias is not a string', function () {
-        var expected = '[123]: is not of type string';
-        expect(function () {
-            moduleAlias.getAliasPath(123);
-        })
-            .to.throw(expected);
-    })
+  it('should throw when alias is not a string', function () {
+      var expected = '[123]: is not of type string';
+      expect(function () {
+          moduleAlias.getAliasPath(123);
+      }).to.throw(expected);
+  })
 })
