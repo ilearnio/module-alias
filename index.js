@@ -186,11 +186,11 @@ function init (options) {
 // Retrieve a path by specifying a registered alias
 function getAliasPath(alias) {
     if (typeof alias !== 'string') {
-        throw new Error('[' + alias + ']: is not of type string');
+        throw new Error('"' + alias + '": is not of type string');
     }
 
     if (!moduleAliases[alias]) {
-        throw new Error('[' + alias + ']: alias does not exist');
+        throw new Error('"' + alias + '": alias does not exist');
     }
 
     return moduleAliases[alias];

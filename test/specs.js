@@ -180,8 +180,7 @@ describe('Custom handler function', function () {
       moduleAlias.addAlias('@root', expected);
 
       var rootPath = moduleAlias.getAliasPath('@root');
-      expect(rootPath)
-          .to.equal(expected);
+      expect(rootPath).to.equal(expected);
   })
 
   it('should throw when alias does not exist', function () {
@@ -192,7 +191,7 @@ describe('Custom handler function', function () {
   })
 
   it('should throw when alias is not a string', function () {
-      var expected = '[123]: is not of type string';
+      var expected = '"123": is not of type string';
       expect(function () {
           moduleAlias.getAliasPath(123);
       }).to.throw(expected);
