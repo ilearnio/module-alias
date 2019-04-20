@@ -127,6 +127,41 @@ function reset () {
   moduleAliases = {}
 }
 
+//
+// Functions to load configurations from a file
+//
+
+// Load configuration from any file
+function loadConfigFile (packagePath) {
+  try {
+    var config = require(packagePath)
+
+    // ES6 export default
+    if (config && config.default) {
+      config = config.default
+    }
+
+    return config
+  } catch (e) {
+    // Do nothing
+  }
+}
+
+// Load configuration from the package.json file
+function loadPackageJSONFile (packagePath) {
+  try {
+    var config = require(packagePath)
+
+    if (config && config['module-alias']) {
+      return config['module-alias']
+    }
+
+    return {}
+  } catch (e) {
+    // Do nothing
+  }
+}
+
 /**
  * Import aliases from package.json
  * @param {object} options
@@ -143,26 +178,40 @@ function init (options) {
   var base = nodePath.resolve(
     options.base || nodePath.join(__dirname, '../..')
   )
-  var packagePath = base.replace(/\/package\.json$/, '') + '/package.json'
 
-  try {
-    var npmPackage = require(packagePath)
-  } catch (e) {
-    // Do nothing
+  var packagePath = ''
+  var moduleAlias = null
+
+  //
+  // Load the configuration
+  //
+
+  // If a path has been provided, try loading the configuration using it
+  // It could be a simple JS, JSON or any file, or a package.json file
+  if (options.base) {
+    packagePath = options.base
+
+    if (packagePath.indexOf('package.json') > -1) {
+      moduleAlias = loadPackageJSONFile(packagePath)
+    } else {
+      moduleAlias = loadConfigFile(packagePath)
+    }
   }
 
-  if (typeof npmPackage !== 'object') {
+  // Try module-alias.config.js
+  if (!moduleAlias) {
+    packagePath = base + '/module-alias.config.js'
+    moduleAlias = loadConfigFile(packagePath)
+  }
+
+  // Try package.json
+  if (!moduleAlias) {
+    packagePath = base + '/package.json'
+    moduleAlias = loadPackageJSONFile(packagePath)
+  }
+
+  if (typeof moduleAlias !== 'object') {
     throw new Error('Unable to read ' + packagePath)
-  }
-
-  //
-  // Set the object paths
-  //
-
-  var moduleAlias = {}
-
-  if (npmPackage['module-alias']) {
-    moduleAlias = npmPackage['module-alias']
   }
 
   //
