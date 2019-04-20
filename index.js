@@ -161,15 +161,8 @@ function init (options) {
 
   var moduleAlias = {}
 
-  // Use the object from the new location/key
   if (npmPackage['module-alias']) {
     moduleAlias = npmPackage['module-alias']
-  } else {
-    // Backward compatibility.
-    moduleAlias = {
-      aliases: npmPackage._moduleAliases,
-      moduleDirectories: npmPackage._moduleDirectories || []
-    }
   }
 
   //
