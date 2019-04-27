@@ -174,4 +174,8 @@ describe('Custom handler function', function () {
     })
       .to.throw('[module-alias] Expecting custom handler function to return path.')
   })
+
+  it('should not break require.resolve', function () {
+    require.resolve('./baz', { paths: [`${process.cwd()}/test/src/bar`] })
+  })
 })

@@ -27,7 +27,7 @@ Module._nodeModulePaths = function (from) {
 }
 
 var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parentModule, isMain) {
+Module._resolveFilename = function (request, parentModule, isMain, options) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
@@ -46,7 +46,7 @@ Module._resolveFilename = function (request, parentModule, isMain) {
     }
   }
 
-  return oldResolveFilename.call(this, request, parentModule, isMain)
+  return oldResolveFilename.call(this, request, parentModule, isMain, options)
 }
 
 function isPathMatchesAlias (path, alias) {
