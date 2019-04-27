@@ -176,6 +176,8 @@ describe('Custom handler function', function () {
   })
 
   it('should not break require.resolve', function () {
-    require.resolve('./baz', { paths: [`${process.cwd()}/test/src/bar`] })
+    require.resolve('./baz', {
+      paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
+    })
   })
 })
