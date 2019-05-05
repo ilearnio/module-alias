@@ -138,7 +138,7 @@ function loadConfigFile (configPath) {
 
     // ES6 export default
     if (config && config.default) {
-      config = config.default
+      return config.default
     }
 
     return config
@@ -162,29 +162,15 @@ function loadPackageJSONFile (configPath) {
   }
 }
 
-/**
- * Import aliases from package.json
- * @param {object} options
- */
-function init (options) {
-  if (typeof options === 'string') {
-    options = { base: options }
-  }
-
-  options = options || {}
-
-  // There is probably 99% chance that the project root directory in located
+function loadConfig (options) {
+  // There is probably 99% chance that the project root directory is located
   // above the node_modules directory
   var base = nodePath.resolve(
     options.base || nodePath.join(__dirname, '../..')
   )
 
   var configPath = ''
-  var config = null
-
-  //
-  // Load the configuration
-  //
+  var config;
 
   // If a path has been provided, try loading the configuration using it
   // It could be a simple JS, JSON or any file, or a package.json file
@@ -213,6 +199,23 @@ function init (options) {
   if (typeof config !== 'object') {
     throw new Error('Unable to read ' + configPath)
   }
+
+  return config
+}
+
+/**
+ * Import aliases from package.json
+ * @param {object} options
+ */
+function init (options) {
+  if (typeof options === 'string') {
+    options = { base: options }
+  }
+
+  options = options || {}
+
+  // Load the configuration
+  var config = loadConfig(options)
 
   //
   // Import aliases
