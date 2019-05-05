@@ -116,6 +116,15 @@ function reset () {
   // Reset all changes in paths caused by addPath function
   modulePaths.forEach(function (path) {
     removePathHelper(path, require.main.paths)
+
+    // Delete from require.cache if the module has been required before.
+    // This is required for node >= 11
+    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
+      if (name.indexOf(path) !== -1) {
+        delete require.cache[name]
+      }
+    })
+
     var parent = module.parent
     while (parent && parent !== require.main) {
       removePathHelper(path, parent.paths)
