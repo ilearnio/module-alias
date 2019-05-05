@@ -132,9 +132,9 @@ function reset () {
 //
 
 // Load configuration from any file
-function loadConfigFile (packagePath) {
+function loadConfigFile (configPath) {
   try {
-    var config = require(packagePath)
+    var config = require(configPath)
 
     // ES6 export default
     if (config && config.default) {
@@ -148,9 +148,9 @@ function loadConfigFile (packagePath) {
 }
 
 // Load configuration from the package.json file
-function loadPackageJSONFile (packagePath) {
+function loadPackageJSONFile (configPath) {
   try {
-    var config = require(packagePath)
+    var config = require(configPath)
 
     if (config && config['module-alias']) {
       return config['module-alias']
@@ -179,8 +179,8 @@ function init (options) {
     options.base || nodePath.join(__dirname, '../..')
   )
 
-  var packagePath = ''
-  var moduleAlias = null
+  var configPath = ''
+  var config = null
 
   //
   // Load the configuration
@@ -189,36 +189,36 @@ function init (options) {
   // If a path has been provided, try loading the configuration using it
   // It could be a simple JS, JSON or any file, or a package.json file
   if (options.base) {
-    packagePath = options.base
+    configPath = options.base
 
-    if (packagePath.indexOf('package.json') > -1) {
-      moduleAlias = loadPackageJSONFile(packagePath)
+    if (configPath.indexOf('package.json') > -1) {
+      config = loadPackageJSONFile(configPath)
     } else {
-      moduleAlias = loadConfigFile(packagePath)
+      config = loadConfigFile(configPath)
     }
   }
 
   // Try module-alias.config.js
-  if (!moduleAlias) {
-    packagePath = base + '/module-alias.config.js'
-    moduleAlias = loadConfigFile(packagePath)
+  if (!config) {
+    configPath = base + '/module-alias.config.js'
+    config = loadConfigFile(configPath)
   }
 
   // Try package.json
-  if (!moduleAlias) {
-    packagePath = base + '/package.json'
-    moduleAlias = loadPackageJSONFile(packagePath)
+  if (!config) {
+    configPath = base + '/package.json'
+    config = loadPackageJSONFile(configPath)
   }
 
-  if (typeof moduleAlias !== 'object') {
-    throw new Error('Unable to read ' + packagePath)
+  if (typeof config !== 'object') {
+    throw new Error('Unable to read ' + configPath)
   }
 
   //
   // Import aliases
   //
 
-  var aliases = moduleAlias.aliases || {}
+  var aliases = config.aliases || {}
 
   for (var alias in aliases) {
     if (aliases[alias][0] !== '/') {
@@ -232,7 +232,7 @@ function init (options) {
   // Register custom module directories (like node_modules)
   //
 
-  var moduleDirectories = moduleAlias.moduleDirectories || []
+  var moduleDirectories = config.moduleDirectories || []
 
   if (moduleDirectories instanceof Array) {
     moduleDirectories.forEach(function (dir) {
