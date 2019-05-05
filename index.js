@@ -253,3 +253,7 @@ module.exports.addAlias = addAlias
 module.exports.addAliases = addAliases
 module.exports.isPathMatchesAlias = isPathMatchesAlias
 module.exports.reset = reset
+
+module.exports._loadConfig = loadConfig
+module.exports._loadConfigFile = loadConfigFile
+module.exports._loadPackageJSONFile = loadPackageJSONFile
