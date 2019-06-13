@@ -3,9 +3,7 @@
 var BuiltinModule = require('module')
 
 // Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1
-  ? module.constructor
-  : BuiltinModule
+var Module = module.constructor.length > 1 ? module.constructor : BuiltinModule
 
 var nodePath = require('path')
 
@@ -37,7 +35,9 @@ Module._resolveFilename = function (request, parentModule, isMain) {
         var fromPath = parentModule.filename
         aliasTarget = moduleAliases[alias](fromPath, request, alias)
         if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error('[module-alias] Expecting custom handler function to return path.')
+          throw new Error(
+            '[module-alias] Expecting custom handler function to return path.'
+          )
         }
       }
       request = nodePath.join(aliasTarget, request.substr(alias.length))
@@ -149,7 +149,9 @@ function init (options) {
 
   var candidatePackagePaths
   if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
+    candidatePackagePaths = [
+      nodePath.resolve(options.base.replace(/\/package\.json$/, ''))
+    ]
   } else {
     // There is probably 99% chance that the project root directory in located
     // above the node_modules directory,
@@ -164,7 +166,12 @@ function init (options) {
     try {
       base = candidatePackagePaths[i]
 
-      npmPackage = require(nodePath.join(base, 'package.json'))
+      /* eslint camelcase: 0 no-undef: 0 */
+      var requireFunc =
+        typeof __webpack_require__ === 'function'
+          ? __non_webpack_require__
+          : require
+      npmPackage = requireFunc(nodePath.join(base, 'package.json'))
       break
     } catch (e) {
       // noop
@@ -173,7 +180,9 @@ function init (options) {
 
   if (typeof npmPackage !== 'object') {
     var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
+    throw new Error(
+      'Unable to find package.json in any of:\n[' + pathString + ']'
+    )
   }
 
   //
