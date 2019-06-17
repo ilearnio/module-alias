@@ -194,6 +194,22 @@ describe('module-alias', function () {
     expect(bar).to.equal('Hello from baz')
     expect(src).to.equal('Hello from foo')
   })
+
+  if (semver.gte(process.version, '8.9.0')) {
+    it('should support the options argument', function () {
+      const options = {
+        paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
+      }
+
+      try {
+        require.resolve('./baz', options)
+      } catch (err) {}
+
+      const lastArgs = resolveSpy.lastArgs
+      expect(resolveSpy.callCount).to.be.greaterThan(0)
+      expect(lastArgs[lastArgs.length - 1]).to.equal(options)
+    })
+  }
 })
 
 describe('Custom handler function', function () {
@@ -243,20 +259,4 @@ describe('Custom handler function', function () {
     })
       .to.throw('[module-alias] Expecting custom handler function to return path.')
   })
-
-  if (semver.gte(process.version, '8.9.0')) {
-    it('should support the options argument', function () {
-      const options = {
-        paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
-      }
-
-      try {
-        require.resolve('./baz', options)
-      } catch (err) {}
-
-      const lastArgs = resolveSpy.lastArgs
-      expect(resolveSpy.callCount).to.be.greaterThan(0)
-      expect(lastArgs[lastArgs.length - 1]).to.equal(options)
-    })
-  }
 })
