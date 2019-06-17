@@ -1,5 +1,16 @@
 /* eslint-env mocha */
 
+var BuiltinModule = require('module')
+
+// Guard against poorly mocked module constructors
+var Module = module.constructor.length > 1
+  ? module.constructor
+  : BuiltinModule
+
+var spyOn = require('./spyOn')
+// This spy needs to be created before initially requiring module-alias.
+var resolveSpy = spyOn(Module, '_resolveFilename')
+
 var expect = require('chai').expect
 var exec = require('child_process').exec
 var path = require('path')
@@ -10,7 +21,10 @@ var moduleAlias
 describe('module-alias', function () {
   beforeEach(function () { moduleAlias = require('..') })
 
-  afterEach(function () { moduleAlias.reset() })
+  afterEach(function () {
+    moduleAlias.reset()
+    resolveSpy.reset()
+  })
 
   it('should register path (addPath)', function () {
     var value
@@ -231,10 +245,18 @@ describe('Custom handler function', function () {
   })
 
   if (semver.gte(process.version, '8.9.0')) {
-    it('should not break require.resolve', function () {
-      require.resolve('./baz', {
+    it('should support the options argument', function () {
+      const options = {
         paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
-      })
+      }
+
+      try {
+        require.resolve('./baz', options)
+      } catch {}
+
+      const lastArgs = resolveSpy.lastArgs
+      expect(resolveSpy.callCount).to.be.greaterThan(0)
+      expect(lastArgs[lastArgs.length - 1]).to.equal(options)
     })
   }
 })
