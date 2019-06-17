@@ -252,7 +252,7 @@ describe('Custom handler function', function () {
 
       try {
         require.resolve('./baz', options)
-      } catch {}
+      } catch (err) {}
 
       const lastArgs = resolveSpy.lastArgs
       expect(resolveSpy.callCount).to.be.greaterThan(0)

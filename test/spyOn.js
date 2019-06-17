@@ -1,4 +1,4 @@
-function spyOn(obj, property) {
+function spyOn (obj, property) {
   var spy = {
     callCount: 0,
     allArgs: [],
