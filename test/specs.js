@@ -4,6 +4,7 @@ var expect = require('chai').expect
 var exec = require('child_process').exec
 var path = require('path')
 var fs = require('fs')
+var semver = require('semver')
 var moduleAlias
 
 describe('module-alias', function () {
@@ -229,9 +230,11 @@ describe('Custom handler function', function () {
       .to.throw('[module-alias] Expecting custom handler function to return path.')
   })
 
-  it('should not break require.resolve', function () {
-    require.resolve('./baz', {
-      paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
+  if (semver.gte(process.version, '8.9.0')) {
+    it('should not break require.resolve', function () {
+      require.resolve('./baz', {
+        paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
+      })
     })
-  })
+  }
 })
