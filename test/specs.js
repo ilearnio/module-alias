@@ -125,7 +125,7 @@ describe('module-alias', function () {
       })
     })
   })
-  
+
   describe('importing settings from package.json', function () {
     function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
@@ -197,7 +197,6 @@ describe('module-alias', function () {
       })
     })
   })
-
 
   it('should support forked modules', function () {
     expect(typeof require('hello-world-classic')).to.equal('function')
