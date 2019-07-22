@@ -12,6 +12,7 @@ var nodePath = require('path')
 var modulePaths = []
 var moduleAliases = {}
 var moduleAliasNames = []
+var CONFIG_FILE_NAME = 'module.alias.config.js'
 
 var oldNodeModulePaths = Module._nodeModulePaths
 Module._nodeModulePaths = function (from) {
@@ -160,15 +161,25 @@ function init (options) {
 
   var npmPackage
   var base
+  var aliasConfig
+  var filename = process.env.ALIAS_FILENAME || CONFIG_FILE_NAME
   for (var i in candidatePackagePaths) {
     try {
       base = candidatePackagePaths[i]
 
       npmPackage = require(nodePath.join(base, 'package.json'))
+      aliasConfig = require(nodePath.join(base, filename))
       break
     } catch (e) {
       // noop
     }
+  }
+
+  if (typeof aliasConfig !== 'object') {
+    aliasConfig = {}
+    var paths = candidatePackagePaths.join(',\n')
+    /// don't throw error on missing file.
+    console.warn('Unable to find ' + filename + ' in any of:\n[' + paths + ']')
   }
 
   if (typeof npmPackage !== 'object') {
@@ -190,12 +201,31 @@ function init (options) {
 
   addAliases(aliases)
 
+  var aliasesFromConfig = aliasConfig._moduleAliases || {}
+
+  for (alias in aliasesFromConfig) {
+    if (aliasesFromConfig[alias][0] !== '/') {
+      aliasesFromConfig[alias] = nodePath.join(base, aliasesFromConfig[alias])
+    }
+  }
+
+  addAliases(aliasesFromConfig)
+
   //
   // Register custom module directories (like node_modules)
   //
 
   if (npmPackage._moduleDirectories instanceof Array) {
     npmPackage._moduleDirectories.forEach(function (dir) {
+      if (dir === 'node_modules') return
+
+      var modulePath = nodePath.join(base, dir)
+      addPath(modulePath)
+    })
+  }
+
+  if (aliasConfig._moduleDirectories instanceof Array) {
+    aliasConfig._moduleDirectories.forEach(function (dir) {
       if (dir === 'node_modules') return
 
       var modulePath = nodePath.join(base, dir)

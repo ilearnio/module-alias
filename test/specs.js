@@ -81,6 +81,51 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
+  describe('importing settings from module.alias.config.js', function () {
+    function expectAliasesToBeImported () {
+      var foo2, bar2
+      try {
+        foo2 = require('@foo2')
+        bar2 = require('@bar2')
+      } catch (e) {
+      }
+      expect(foo2).to.equal('Hello from foo2')
+      expect(bar2).to.equal('Hello from bar2')
+    }
+
+    describe('when base working directory is process.cwd()', function () {
+      var baseWorkingDirectory
+      beforeEach(function () {
+        baseWorkingDirectory = process.cwd()
+      })
+
+      afterEach(function () {
+        process.chdir(baseWorkingDirectory)
+      })
+
+      it('should import settings from user-defined base path', function () {
+        moduleAlias({
+          base: path.join(__dirname, 'src')
+        })
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import default settings from process.cwd()/module.alias.config.js', function () {
+        process.chdir(path.join(__dirname, 'src'))
+        moduleAlias()
+        expectAliasesToBeImported()
+      })
+
+      it('should import default settings from config filename defined in environment variable(process.evn.ALIAS_FILENAME)', function () {
+        process.env.ALIAS_FILENAME = 'alias.custom.config.js'
+        process.chdir(path.join(__dirname, 'src'))
+        moduleAlias()
+        expectAliasesToBeImported()
+      })
+    })
+  })
+  
   describe('importing settings from package.json', function () {
     function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
@@ -152,6 +197,7 @@ describe('module-alias', function () {
       })
     })
   })
+
 
   it('should support forked modules', function () {
     expect(typeof require('hello-world-classic')).to.equal('function')
