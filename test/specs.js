@@ -1,16 +1,4 @@
 /* eslint-env mocha */
-
-var BuiltinModule = require('module')
-
-// Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1
-  ? module.constructor
-  : BuiltinModule
-
-var spyOn = require('./spyOn')
-// This spy needs to be created before initially requiring module-alias.
-var resolveSpy = spyOn(Module, '_resolveFilename')
-
 var expect = require('chai').expect
 var exec = require('child_process').exec
 var path = require('path')
@@ -23,7 +11,6 @@ describe('module-alias', function () {
 
   afterEach(function () {
     moduleAlias.reset()
-    resolveSpy.reset()
   })
 
   it('should register path (addPath)', function () {
@@ -200,14 +187,9 @@ describe('module-alias', function () {
       const options = {
         paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
       }
+      const baz = require.resolve('./baz', options)
 
-      try {
-        require.resolve('./baz', options)
-      } catch (err) {}
-
-      const lastArgs = resolveSpy.lastArgs
-      expect(resolveSpy.callCount).to.be.greaterThan(0)
-      expect(lastArgs[lastArgs.length - 1]).to.equal(options)
+      expect(baz).to.have.string(path.join('bar', 'baz', 'index.js'))
     })
   }
 })
