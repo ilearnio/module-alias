@@ -109,7 +109,7 @@ describe('module-alias', function () {
       expectAliasesToBeImported()
     })
 
-    describe('when base working directory is process.cwd()', function () {
+    context('when base working directory is process.cwd()', function () {
       var baseWorkingDirectory
       beforeEach(function () {
         baseWorkingDirectory = process.cwd()
@@ -127,7 +127,7 @@ describe('module-alias', function () {
       })
     })
 
-    describe('when module-alias package is nested (looking up __dirname/../../)', function () {
+    context('when module-alias package is nested (looking up __dirname/../../)', function () {
       var moduleAliasDir = path.resolve(
         '.',
         'test',
