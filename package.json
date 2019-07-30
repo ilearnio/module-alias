@@ -46,7 +46,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn lint-test"
+      "pre-push": "npm run lint-test"
     }
   }
 }
