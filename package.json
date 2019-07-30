@@ -39,6 +39,7 @@
     "chai": "^3.5.0",
     "hello-world-classic": "ilearnio/hello-world-classic",
     "mocha": "^2.4.5",
+    "semver": "^6.1.1",
     "standard": "^12.0.1"
   }
 }
