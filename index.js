@@ -82,7 +82,9 @@ function addPath (path) {
   if (modulePaths.indexOf(path) === -1) {
     modulePaths.push(path)
     // Enable the search path for the current top-level module
-    addPathHelper(path, require.main.paths)
+    if (require.main) {
+      addPathHelper(path, require.main.paths)
+    }
     parent = module.parent
 
     // Also modify the paths of the module that was used to load the
@@ -115,7 +117,9 @@ function addAlias (alias, target) {
 function reset () {
   // Reset all changes in paths caused by addPath function
   modulePaths.forEach(function (path) {
-    removePathHelper(path, require.main.paths)
+    if (require.main) {
+      removePathHelper(path, require.main.paths)
+    }
 
     // Delete from require.cache if the module has been required before.
     // This is required for node >= 11
