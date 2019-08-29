@@ -1,15 +1,17 @@
 /* eslint-env mocha */
-
 var expect = require('chai').expect
 var exec = require('child_process').exec
 var path = require('path')
 var fs = require('fs')
+var semver = require('semver')
 var moduleAlias
 
 describe('module-alias', function () {
   beforeEach(function () { moduleAlias = require('..') })
 
-  afterEach(function () { moduleAlias.reset() })
+  afterEach(function () {
+    moduleAlias.reset()
+  })
 
   it('should register path (addPath)', function () {
     var value
@@ -107,7 +109,7 @@ describe('module-alias', function () {
       expectAliasesToBeImported()
     })
 
-    describe('with process.cwd()', function () {
+    context('when base working directory is process.cwd()', function () {
       var baseWorkingDirectory
       beforeEach(function () {
         baseWorkingDirectory = process.cwd()
@@ -125,7 +127,7 @@ describe('module-alias', function () {
       })
     })
 
-    describe('by looking up __dirname/../../', function () {
+    context('when module-alias package is nested (looking up __dirname/../../)', function () {
       var moduleAliasDir = path.resolve(
         '.',
         'test',
@@ -179,6 +181,17 @@ describe('module-alias', function () {
     expect(bar).to.equal('Hello from baz')
     expect(src).to.equal('Hello from foo')
   })
+
+  if (semver.gte(process.version, '8.9.0')) {
+    it('should support the options argument', function () {
+      const options = {
+        paths: [path.join(process.cwd(), 'test', 'src', 'bar')]
+      }
+      const baz = require.resolve('./baz', options)
+
+      expect(baz).to.have.string(path.join('bar', 'baz', 'index.js'))
+    })
+  }
 })
 
 describe('Custom handler function', function () {

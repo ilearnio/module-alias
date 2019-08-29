@@ -27,7 +27,7 @@ Module._nodeModulePaths = function (from) {
 }
 
 var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parentModule, isMain) {
+Module._resolveFilename = function (request, parentModule, isMain, options) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
@@ -46,7 +46,7 @@ Module._resolveFilename = function (request, parentModule, isMain) {
     }
   }
 
-  return oldResolveFilename.call(this, request, parentModule, isMain)
+  return oldResolveFilename.call(this, request, parentModule, isMain, options)
 }
 
 function isPathMatchesAlias (path, alias) {
@@ -116,6 +116,15 @@ function reset () {
   // Reset all changes in paths caused by addPath function
   modulePaths.forEach(function (path) {
     removePathHelper(path, require.main.paths)
+
+    // Delete from require.cache if the module has been required before.
+    // This is required for node >= 11
+    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
+      if (name.indexOf(path) !== -1) {
+        delete require.cache[name]
+      }
+    })
+
     var parent = module.parent
     while (parent && parent !== require.main) {
       removePathHelper(path, parent.paths)
