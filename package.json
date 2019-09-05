@@ -10,8 +10,7 @@
     "test": "npm run lint && npm run testonly",
     "testonly": "NODE_ENV=test mocha test/specs.js",
     "testonly-watch": "NODE_ENV=test mocha -w test/specs.js",
-    "lint": "standard",
-    "lint-test": "npm run lint && npm run test"
+    "lint": "standard"
   },
   "bugs": {
     "url": "https://github.com/ilearnio/module-alias/issues"
@@ -46,7 +45,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run lint-test"
+      "pre-push": "npm run test"
     }
   }
 }
