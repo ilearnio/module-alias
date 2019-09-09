@@ -119,7 +119,7 @@ moduleAlias.addPath(__dirname + '/src')
 //
 moduleAlias(__dirname + '/package.json')
 
-// Or let mudule-alias to figure where your package.json is
+// Or let module-alias to figure where your package.json is
 // located. By default it will look in the same directory
 // where you have your node_modules (application's root)
 moduleAlias()
