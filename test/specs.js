@@ -166,6 +166,17 @@ describe('module-alias', function () {
     })
   })
 
+  it('should work with require.resolve', function () {
+    var aliasedDir = path.join(__dirname, 'src', 'foo')
+    moduleAlias.addAliases({
+      'some-alias': aliasedDir
+    })
+
+    var bar = require.resolve('some-alias')
+
+    expect(bar).to.equal(path.join(aliasedDir, 'index.js'))
+  })
+
   it('should match longest alias first', function () {
     moduleAlias.addAliases({
       'react-dom': path.join(__dirname, 'src/bar/baz'),
