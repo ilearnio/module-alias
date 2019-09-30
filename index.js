@@ -134,6 +134,7 @@ function reset () {
 
   modulePaths = []
   moduleAliases = {}
+  moduleAliasNames = []
 }
 
 /**
