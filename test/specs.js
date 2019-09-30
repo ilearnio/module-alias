@@ -158,6 +158,24 @@ describe('module-alias', function () {
     })
   })
 
+  context('when used from the REPL', function () {
+    before(function () {
+      require.main._simulateRepl = true
+    })
+
+    after(function () {
+      delete require.main._simulateRepl
+    })
+
+    it('should addPath', function () {
+      moduleAlias.addPath('some-path')
+    })
+
+    it('should reset', function () {
+      moduleAlias.reset()
+    })
+  })
+
   it('should support forked modules', function () {
     expect(typeof require('hello-world-classic')).to.equal('function')
   })
