@@ -143,6 +143,21 @@ module.exports = {
 }
 ```
 
+## Usage with Jest
+
+If you use jest to test your application, you can structure this kind of configuration to run tests:
+
+```
+  "jest": {
+    "moduleNameMapper": {
+      "@root/(.*)": "<rootDir>/$1",
+      "@client/(.*)": "<rootDir>/src/client/$1"
+    },
+  }
+```
+
+Just put it on `package.json` or in yout `jest.config.js`
+
 ## How it works?
 
 In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you use `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it replaces the alias in the string with the target path of the alias.
