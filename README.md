@@ -147,7 +147,7 @@ module.exports = {
 
 If you use jest to test your application, you can structure this kind of configuration to run tests:
 
-```
+```js
   "jest": {
     "moduleNameMapper": {
       "@root/(.*)": "<rootDir>/$1",
