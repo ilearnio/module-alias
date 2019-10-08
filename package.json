@@ -1,7 +1,7 @@
 {
   "name": "module-alias",
   "description": "Create aliases of directories and register custom module paths",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "author": {
     "name": "Nick Gavrilov",
     "email": "artnikpro@gmail.com"
@@ -38,7 +38,14 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "hello-world-classic": "ilearnio/hello-world-classic",
+    "husky": "^3.0.2",
     "mocha": "^2.4.5",
+    "semver": "^6.1.1",
     "standard": "^12.0.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run test"
+    }
   }
 }

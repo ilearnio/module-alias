@@ -3,9 +3,7 @@
 var BuiltinModule = require('module')
 
 // Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1
-  ? module.constructor
-  : BuiltinModule
+var Module = module.constructor.length > 1 ? module.constructor : BuiltinModule
 
 var nodePath = require('path')
 
@@ -27,7 +25,7 @@ Module._nodeModulePaths = function (from) {
 }
 
 var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parentModule, isMain) {
+Module._resolveFilename = function (request, parentModule, isMain, options) {
   for (var i = moduleAliasNames.length; i-- > 0;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
@@ -37,7 +35,9 @@ Module._resolveFilename = function (request, parentModule, isMain) {
         var fromPath = parentModule.filename
         aliasTarget = moduleAliases[alias](fromPath, request, alias)
         if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error('[module-alias] Expecting custom handler function to return path.')
+          throw new Error(
+            '[module-alias] Expecting custom handler function to return path.'
+          )
         }
       }
       request = nodePath.join(aliasTarget, request.substr(alias.length))
@@ -46,7 +46,7 @@ Module._resolveFilename = function (request, parentModule, isMain) {
     }
   }
 
-  return oldResolveFilename.call(this, request, parentModule, isMain)
+  return oldResolveFilename.call(this, request, parentModule, isMain, options)
 }
 
 function isPathMatchesAlias (path, alias) {
@@ -82,12 +82,15 @@ function addPath (path) {
   if (modulePaths.indexOf(path) === -1) {
     modulePaths.push(path)
     // Enable the search path for the current top-level module
-    addPathHelper(path, require.main.paths)
+    var mainModule = getMainModule()
+    if (mainModule) {
+      addPathHelper(path, mainModule.paths)
+    }
     parent = module.parent
 
     // Also modify the paths of the module that was used to load the
     // app-module-paths module and all of it's parents
-    while (parent && parent !== require.main) {
+    while (parent && parent !== mainModule) {
       addPathHelper(path, parent.paths)
       parent = parent.parent
     }
@@ -113,11 +116,24 @@ function addAlias (alias, target) {
  * The function is undocumented and for testing purposes only
  */
 function reset () {
+  var mainModule = getMainModule()
+
   // Reset all changes in paths caused by addPath function
   modulePaths.forEach(function (path) {
-    removePathHelper(path, require.main.paths)
+    if (mainModule) {
+      removePathHelper(path, mainModule.paths)
+    }
+
+    // Delete from require.cache if the module has been required before.
+    // This is required for node >= 11
+    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
+      if (name.indexOf(path) !== -1) {
+        delete require.cache[name]
+      }
+    })
+
     var parent = module.parent
-    while (parent && parent !== require.main) {
+    while (parent && parent !== mainModule) {
       removePathHelper(path, parent.paths)
       parent = parent.parent
     }
@@ -125,6 +141,7 @@ function reset () {
 
   modulePaths = []
   moduleAliases = {}
+  moduleAliasNames = []
 }
 
 //
@@ -190,8 +207,8 @@ function loadConfig (base, options) {
     config = loadPackageJSONFile(configPath)
   }
 
-  if (typeof config !== 'object') {
-    throw new Error('Unable to read ' + configPath)
+  if (!config) {
+    throw new Error('Failed to load configuration.')
   }
 
   return config
@@ -208,14 +225,42 @@ function init (options) {
 
   options = options || {}
 
-  // There is probably 99% chance that the project root directory is located
-  // above the node_modules directory
-  var base = nodePath.resolve(
-    options.base || nodePath.join(__dirname, '../..')
-  )
+  var candidatePackagePaths
 
-  // Load the configuration
-  var config = loadConfig(base, options)
+  if (options.base) {
+    candidatePackagePaths = [
+      nodePath.resolve(options.base.replace(/\/package\.json$/, ''))
+    ]
+  } else {
+    // There is probably 99% chance that the project root directory in located
+    // above the node_modules directory,
+    // Or that package.json is in the node process' current working directory (when
+    // running a package manager script, e.g. `yarn start` / `npm run start`)
+    // candidatePackagePaths = [nodePath.join(__dirname, "../.."), process.cwd()];
+    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
+  }
+
+  var config
+  var base
+  for (var i in candidatePackagePaths) {
+    try {
+      base = candidatePackagePaths[i]
+
+      // Load the configuration
+      config = loadConfig(base, options)
+
+      break
+    } catch (e) {
+      // noop
+    }
+  }
+
+  if (typeof config !== 'object') {
+    var pathString = candidatePackagePaths.join(',\n')
+    throw new Error(
+      'Unable to find package.json in any of:\n[' + pathString + ']'
+    )
+  }
 
   //
   // Import aliases
@@ -245,6 +290,10 @@ function init (options) {
       addPath(modulePath)
     })
   }
+}
+
+function getMainModule () {
+  return require.main._simulateRepl ? undefined : require.main
 }
 
 module.exports = init
