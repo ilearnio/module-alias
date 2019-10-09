@@ -197,13 +197,13 @@ function loadConfig (base, options) {
 
   // Try module-alias.config.js
   if (!config) {
-    configPath = base + '/module-alias.config.js'
+    configPath = nodePath.join(base, 'module-alias.config.js')
     config = loadConfigFile(configPath)
   }
 
   // Try package.json
   if (!config) {
-    configPath = base + '/package.json'
+    configPath = nodePath.join(base, 'package.json')
     config = loadPackageJSONFile(configPath)
   }
 
