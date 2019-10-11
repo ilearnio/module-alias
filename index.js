@@ -145,6 +145,16 @@ function reset () {
 }
 
 //
+// Utility function
+//
+
+// Removes file name from the base and returns only dir.
+function getBaseDir (base) {
+  var parsed = nodePath.parse(base)
+  return parsed.ext ? parsed.dir : base
+}
+
+//
 // Functions to load configurations from a file
 //
 
@@ -254,7 +264,7 @@ function init (options) {
 
   if (typeof config !== 'object') {
     var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
+    throw new Error('Unable to find configuration in any of:\n[' + pathString + ']')
   }
 
   //
@@ -265,7 +275,7 @@ function init (options) {
 
   for (var alias in aliases) {
     if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
+      aliases[alias] = nodePath.join(getBaseDir(base), aliases[alias])
     }
   }
 
@@ -281,7 +291,7 @@ function init (options) {
     moduleDirectories.forEach(function (dir) {
       if (dir === 'node_modules') return
 
-      var modulePath = nodePath.join(base, dir)
+      var modulePath = nodePath.join(getBaseDir(base), dir)
       addPath(modulePath)
     })
   }
