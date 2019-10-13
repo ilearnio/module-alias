@@ -165,7 +165,11 @@ function loadConfigFile (configPath) {
 
     // ES6 export default
     if (config && config.default) {
-      return config.default
+      config = config.default
+    }
+
+    if (config && config['module-alias']) {
+      return config['module-alias']
     }
 
     return config
@@ -174,38 +178,16 @@ function loadConfigFile (configPath) {
   }
 }
 
-// Load configuration from the package.json file
-function loadPackageJSONFile (configPath) {
-  try {
-    var config = require(configPath)
-
-    if (config && config['module-alias']) {
-      return config['module-alias']
-    }
-
-    return {}
-  } catch (e) {
-    // Do nothing
-  }
-}
-
 function loadConfig (base, options) {
-  var configPath = ''
+  var configPath = base
   var config
 
-  // If a path has been provided, try loading the configuration using it
-  // It could be a simple JS, JSON or any file, or a package.json file
-  if (options.base) {
-    configPath = options.base
+  // Try to load the configuration file if the base path is provided.
+  // It could be either a package.json, or any JS file.
+  config = loadConfigFile(configPath)
 
-    if (configPath.indexOf('package.json') > -1) {
-      config = loadPackageJSONFile(configPath)
-    } else {
-      config = loadConfigFile(configPath)
-    }
-  }
-
-  // Try module-alias.config.js
+  // If a directory was provided as a base path, or base was not provided
+  // at all, try loading module-alias.config.js
   if (!config) {
     configPath = nodePath.join(base, 'module-alias.config.js')
     config = loadConfigFile(configPath)
@@ -214,9 +196,10 @@ function loadConfig (base, options) {
   // Try package.json
   if (!config) {
     configPath = nodePath.join(base, 'package.json')
-    config = loadPackageJSONFile(configPath)
+    config = loadConfigFile(configPath)
   }
 
+  // No configuration found
   if (!config) {
     throw new Error('Failed to load configuration.')
   }
@@ -237,7 +220,7 @@ function init (options) {
 
   var candidatePackagePaths
   if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
+    candidatePackagePaths = [options.base]
   } else {
     // There is probably 99% chance that the project root directory in located
     // above the node_modules directory,
