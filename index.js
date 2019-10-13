@@ -3,7 +3,9 @@
 var BuiltinModule = require('module')
 
 // Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1 ? module.constructor : BuiltinModule
+var Module = module.constructor.length > 1
+  ? module.constructor
+  : BuiltinModule
 
 var nodePath = require('path')
 
@@ -35,9 +37,7 @@ Module._resolveFilename = function (request, parentModule, isMain, options) {
         var fromPath = parentModule.filename
         aliasTarget = moduleAliases[alias](fromPath, request, alias)
         if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error(
-            '[module-alias] Expecting custom handler function to return path.'
-          )
+          throw new Error('[module-alias] Expecting custom handler function to return path.')
         }
       }
       request = nodePath.join(aliasTarget, request.substr(alias.length))
@@ -243,7 +243,6 @@ function init (options) {
     // above the node_modules directory,
     // Or that package.json is in the node process' current working directory (when
     // running a package manager script, e.g. `yarn start` / `npm run start`)
-    // candidatePackagePaths = [nodePath.join(__dirname, "../.."), process.cwd()];
     candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
   }
 
