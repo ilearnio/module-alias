@@ -7,6 +7,7 @@ var Module = module.constructor.length > 1
   ? module.constructor
   : BuiltinModule
 
+var fs = require('fs')
 var nodePath = require('path')
 
 var modulePaths = []
@@ -145,16 +146,6 @@ function reset () {
 }
 
 //
-// Utility function
-//
-
-// Removes file name from the base and returns only dir.
-function getBaseDir (base) {
-  var parsed = nodePath.parse(base)
-  return parsed.ext ? parsed.dir : base
-}
-
-//
 // Functions to load configurations from a file
 //
 
@@ -251,11 +242,20 @@ function init (options) {
   // Import aliases
   //
 
+  // Get the base dir without the file
+  // Since the file has already been loaded, it should not fail at all
+  // but still to catch unexpected error
+  try {
+    base = fs.lstatSync(base).isFile() ? nodePath.dirname(base) : base
+  } catch (error) {
+    throw new Error('Unable to get base dir')
+  }
+
   var aliases = config.aliases || {}
 
   for (var alias in aliases) {
     if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(getBaseDir(base), aliases[alias])
+      aliases[alias] = nodePath.join(base, aliases[alias])
     }
   }
 
@@ -271,7 +271,7 @@ function init (options) {
     moduleDirectories.forEach(function (dir) {
       if (dir === 'node_modules') return
 
-      var modulePath = nodePath.join(getBaseDir(base), dir)
+      var modulePath = nodePath.join(base, dir)
       addPath(modulePath)
     })
   }
