@@ -166,10 +166,8 @@ function loadConfigFile (configPath) {
     // ES6 export default
     if (config && config.default) {
       config = config.default
-    }
-
-    if (config && config['module-alias']) {
-      return config['module-alias']
+    } else if (config && config['module-alias']) {
+      config = config['module-alias']
     }
 
     return config
