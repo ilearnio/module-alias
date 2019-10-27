@@ -167,7 +167,7 @@ function loadConfigFile (configPath) {
   }
 }
 
-function loadConfig (base, options) {
+function loadConfig (base) {
   var configPath = base
   var config
 
@@ -225,7 +225,7 @@ function init (options) {
       base = candidatePackagePaths[i]
 
       // Load the configuration
-      config = loadConfig(base, options)
+      config = loadConfig(base)
 
       break
     } catch (e) {
