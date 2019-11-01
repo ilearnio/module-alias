@@ -191,8 +191,10 @@ function init (options) {
   var aliases = npmPackage._moduleAliases || {}
 
   for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
+    if (aliases[alias][0] !== '/') {		
+      aliases[alias] = Array.isArray(aliases[alias]) 
+			  ? nodePath.join(base, ...aliases[alias])
+			  : nodePath.join(base, aliases[alias])
     }
   }
 
