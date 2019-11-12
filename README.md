@@ -143,6 +143,16 @@ module.exports = {
 }
 ```
 
+More details on the [official documentation](https://webpack.js.org/configuration/resolve).
+
+## Known incompatibilities
+
+This module does not play well with:
+
+- [Jest](https://jestjs.io), which discards node's module system entirely to use it's own module system, bypassing module-alias.
+- All kinds of front-end frameworks (React, Vue, ...), as they tend to use Webpack. Use Webpack's [resolve.alias](https://webpack.js.org/configuration/resolve/#resolvealias) mechanism instead.
+- The [NCC compiler](https://github.com/zeit/ncc), as it uses WebPack under the hood without exposing properties, such as resolve.alias. It is not [something they wish to do](https://github.com/zeit/ncc/pull/460).
+
 ## How it works?
 
 In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you use `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it replaces the alias in the string with the target path of the alias.
