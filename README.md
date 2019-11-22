@@ -156,7 +156,6 @@ Unfortunately, `module-alias` itself would not work from Jest due to a custom be
 }
 ```
 
-Just put it on `package.json` or in yout `jest.config.js`
 
 ## How it works?
 
