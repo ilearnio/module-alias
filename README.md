@@ -145,7 +145,7 @@ module.exports = {
 
 ## Usage with Jest
 
-If you use jest to test your application, you can structure this kind of configuration to run tests:
+Unfortunately, `module-alias` itself would not work from Jest due to a custom behavior of Jest's `require`. But you can use it's own aliasing mechanism instead. The configuration can be defined either in `package.json` or `jest.config.js`. The example below is for `package.json`:
 
 ```js
 "jest": {
