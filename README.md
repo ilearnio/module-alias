@@ -145,6 +145,19 @@ module.exports = {
 
 More details on the [official documentation](https://webpack.js.org/configuration/resolve).
 
+## Usage with Jest
+
+Unfortunately, `module-alias` itself would not work from Jest due to a custom behavior of Jest's `require`. But you can use it's own aliasing mechanism instead. The configuration can be defined either in `package.json` or `jest.config.js`. The example below is for `package.json`:
+
+```js
+"jest": {
+  "moduleNameMapper": {
+    "@root/(.*)": "<rootDir>/$1",
+    "@client/(.*)": "<rootDir>/src/client/$1"
+  },
+}
+```
+
 ## Known incompatibilities
 
 This module does not play well with:
