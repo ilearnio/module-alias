@@ -1,1 +1,1 @@
-module.exports = require('./register-module')(module)
+module.exports = require('./register-module')(module.parent || {})
