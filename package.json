@@ -1,7 +1,7 @@
 {
   "name": "@ministryofjustice/module-alias",
   "description": "Module aliases (based on work by Nick Gavrilov artnikpro@gmail.com)",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Form Builder Team <form-builder-team@digital.justice.gov.uk>",
   "contributors": [
     {
