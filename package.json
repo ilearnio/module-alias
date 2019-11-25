@@ -1,7 +1,7 @@
 {
   "name": "@ministryofjustice/module-alias",
   "description": "Module aliases (based on work by Nick Gavrilov artnikpro@gmail.com)",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Form Builder Team <form-builder-team@digital.justice.gov.uk>",
   "contributors": [
     {
@@ -58,7 +58,9 @@
       "pre-commit": "npm run lint && npm run test"
     }
   },
-  "_moduleDirectories": ["test/src/node_modules_custom"],
+  "_moduleDirectories": [
+    "test/src/node_modules_custom"
+  ],
   "_moduleAliases": {
     "@src": "test/src",
     "@foo": "test/src/foo/index.js",
