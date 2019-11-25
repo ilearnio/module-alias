@@ -1,224 +1,259 @@
-'use strict'
+const Module = require('module')
+const path = require('path')
+const fs = require('fs')
 
-var BuiltinModule = require('module')
+let MODULE_PATHS = []
+let MODULE_ALIAS_HASH = {}
+let MODULE_ALIAS_KEYS = []
 
-// Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1
-  ? module.constructor
-  : BuiltinModule
+const CACHE = new Map()
 
-var nodePath = require('path')
+let PACKAGE_PATH = process.cwd()
 
-var modulePaths = []
-var moduleAliases = {}
-var moduleAliasNames = []
+const {
+  _nodeModulePaths: nodeModulePaths,
+  _resolveFilename: resolveFilename
+} = Module
 
-var oldNodeModulePaths = Module._nodeModulePaths
-Module._nodeModulePaths = function (from) {
-  var paths = oldNodeModulePaths.call(this, from)
+function resolveModuleAlias (modulePath) {
+  let i = 0
+  const j = MODULE_ALIAS_KEYS.length
 
-  // Only include the module path for top-level modules
-  // that were not installed:
-  if (from.indexOf('node_modules') === -1) {
-    paths = modulePaths.concat(paths)
+  /*
+   * The array is (already) sorted and reversed
+   * so that the loop can match the longest alias
+   * before the shortest
+   */
+  for (i, j; i < j; i++) {
+    const aliasKey = MODULE_ALIAS_KEYS[i]
+
+    if (matches(modulePath, aliasKey)) {
+      const moduleAliasPath = MODULE_ALIAS_HASH[aliasKey]
+
+      return path.join(moduleAliasPath, modulePath.substr(aliasKey.length))
+    }
   }
+}
+
+Module._nodeModulePaths = function (modulePath) {
+  let paths = nodeModulePaths.call(this, modulePath)
+
+  if (!modulePath.includes('node_modules')) paths = MODULE_PATHS.concat(paths)
 
   return paths
 }
 
-var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parentModule, isMain, options) {
-  for (var i = moduleAliasNames.length; i-- > 0;) {
-    var alias = moduleAliasNames[i]
-    if (isPathMatchesAlias(request, alias)) {
-      var aliasTarget = moduleAliases[alias]
-      // Custom function handler
-      if (typeof moduleAliases[alias] === 'function') {
-        var fromPath = parentModule.filename
-        aliasTarget = moduleAliases[alias](fromPath, request, alias)
-        if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error('[module-alias] Expecting custom handler function to return path.')
-        }
-      }
-      request = nodePath.join(aliasTarget, request.substr(alias.length))
-      // Only use the first match
-      break
-    }
-  }
-
-  return oldResolveFilename.call(this, request, parentModule, isMain, options)
+Module._resolveFilename = function (modulePath, ...args) {
+  return resolveFilename.call(this, resolveModuleAlias(modulePath) || modulePath, ...args)
 }
 
-function isPathMatchesAlias (path, alias) {
-  // Matching /^alias(\/|$)/
-  if (path.indexOf(alias) === 0) {
-    if (path.length === alias.length) return true
-    if (path[alias.length] === '/') return true
+function matches (modulePath, alias) {
+  if (modulePath.startsWith(alias)) {
+    if (modulePath.length === alias.length) return true
+    if (modulePath[alias.length] === '/') return true
   }
 
   return false
 }
 
-function addPathHelper (path, targetArray) {
-  path = nodePath.normalize(path)
-  if (targetArray && targetArray.indexOf(path) === -1) {
-    targetArray.unshift(path)
-  }
+function addPathIntoPaths (modulePath, paths) {
+  modulePath = path.normalize(modulePath)
+
+  if (!paths.includes(modulePath)) paths.unshift(modulePath)
 }
 
-function removePathHelper (path, targetArray) {
-  if (targetArray) {
-    var index = targetArray.indexOf(path)
-    if (index !== -1) {
-      targetArray.splice(index, 1)
-    }
-  }
+function removePathFromPaths (modulePath, paths) {
+  modulePath = path.normalize(modulePath)
+
+  while (paths.includes(modulePath)) paths.splice(paths.indexOf(modulePath), 1)
 }
 
-function addPath (path) {
-  var parent
-  path = nodePath.normalize(path)
+function addPath (modulePath) {
+  modulePath = path.normalize(path.join(getPackagePath(), modulePath))
 
-  if (modulePaths.indexOf(path) === -1) {
-    modulePaths.push(path)
-    // Enable the search path for the current top-level module
-    var mainModule = getMainModule()
-    if (mainModule) {
-      addPathHelper(path, mainModule.paths)
+  if (!MODULE_PATHS.includes(modulePath)) {
+    MODULE_PATHS.push(modulePath)
+
+    const moduleMain = require.main
+
+    if (moduleMain) {
+      const {
+        paths = []
+      } = moduleMain
+
+      addPathIntoPaths(modulePath, paths)
     }
-    parent = module.parent
 
-    // Also modify the paths of the module that was used to load the
-    // app-module-paths module and all of it's parents
-    while (parent && parent !== mainModule) {
-      addPathHelper(path, parent.paths)
+    let {
+      parent
+    } = module
+
+    while (parent) {
+      const {
+        paths = []
+      } = parent
+
+      addPathIntoPaths(modulePath, paths)
+
       parent = parent.parent
     }
   }
 }
 
 function addAliases (aliases) {
-  for (var alias in aliases) {
-    addAlias(alias, aliases[alias])
-  }
+  Object.entries(aliases)
+    .forEach(([alias, modulePath]) => {
+      addAlias(alias, modulePath)
+    })
 }
 
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
-  // Cost of sorting is lower here than during resolution
-  moduleAliasNames = Object.keys(moduleAliases)
-  moduleAliasNames.sort()
+function addAlias (alias, modulePath) {
+  MODULE_ALIAS_HASH[alias] = path.normalize(path.join(getPackagePath(), modulePath))
+  MODULE_ALIAS_KEYS = Object.keys(MODULE_ALIAS_HASH).sort().reverse()
 }
 
-/**
- * Reset any changes maded (resets all registered aliases
- * and custom module directories)
- * The function is undocumented and for testing purposes only
- */
-function reset () {
-  var mainModule = getMainModule()
+function reset (cache = CACHE) {
+  Object.keys(require.cache).forEach((key) => { delete require.cache[key] })
 
-  // Reset all changes in paths caused by addPath function
-  modulePaths.forEach(function (path) {
-    if (mainModule) {
-      removePathHelper(path, mainModule.paths)
+  const moduleMain = require.main
+
+  MODULE_PATHS.forEach((modulePath) => {
+    const {
+      paths = []
+    } = module
+
+    removePathFromPaths(modulePath, paths)
+
+    let {
+      parent
+    } = module
+
+    while (parent) {
+      const {
+        paths = []
+      } = parent
+
+      removePathFromPaths(modulePath, paths)
+
+      parent = parent.parent
     }
 
-    // Delete from require.cache if the module has been required before.
-    // This is required for node >= 11
-    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
-      if (name.indexOf(path) !== -1) {
-        delete require.cache[name]
-      }
-    })
+    if (moduleMain) {
+      const {
+        paths = []
+      } = moduleMain
 
-    var parent = module.parent
-    while (parent && parent !== mainModule) {
-      removePathHelper(path, parent.paths)
-      parent = parent.parent
+      removePathFromPaths(modulePath, paths)
     }
   })
 
-  modulePaths = []
-  moduleAliases = {}
-  moduleAliasNames = []
+  MODULE_PATHS = []
+  MODULE_ALIAS_HASH = {}
+  MODULE_ALIAS_KEYS = []
+
+  cache.clear()
+
+  PACKAGE_PATH = process.cwd()
 }
 
-/**
- * Import aliases from package.json
- * @param {object} options
- */
-function init (options) {
-  if (typeof options === 'string') {
-    options = { base: options }
-  }
-
-  options = options || {}
-
-  var candidatePackagePaths
-  if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
-  } else {
-    // There is probably 99% chance that the project root directory in located
-    // above the node_modules directory,
-    // Or that package.json is in the node process' current working directory (when
-    // running a package manager script, e.g. `yarn start` / `npm run start`)
-    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
-  }
-
-  var npmPackage
-  var base
-  for (var i in candidatePackagePaths) {
-    try {
-      base = candidatePackagePaths[i]
-
-      npmPackage = require(nodePath.join(base, 'package.json'))
-      break
-    } catch (e) {
-      // noop
-    }
-  }
-
-  if (typeof npmPackage !== 'object') {
-    var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
-  }
-
-  //
-  // Import aliases
-  //
-
-  var aliases = npmPackage._moduleAliases || {}
-
-  for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
-    }
-  }
-
-  addAliases(aliases)
-
-  //
-  // Register custom module directories (like node_modules)
-  //
-
-  if (npmPackage._moduleDirectories instanceof Array) {
-    npmPackage._moduleDirectories.forEach(function (dir) {
-      if (dir === 'node_modules') return
-
-      var modulePath = nodePath.join(base, dir)
-      addPath(modulePath)
+function registerModuleAliases (aliases = {}) {
+  Object.entries(aliases)
+    .forEach(([alias, modulePath]) => {
+      if (modulePath.charAt(0) !== '/') {
+        addAlias(alias, modulePath)
+      }
     })
+}
+
+function registerModuleDirectories (directories = []) {
+  directories
+    .forEach((directory) => {
+      if (directory !== 'node_modules') {
+        addPath(directory)
+      }
+    })
+}
+
+function getPackagePath () {
+  return PACKAGE_PATH
+}
+
+function setPackagePath (packagePath) {
+  PACKAGE_PATH = packagePath
+}
+
+function getPackagePathFromFileSystem (packageBase) {
+  let packagePath = path.dirname(packageBase)
+  const packagePaths = [packageBase, packagePath]
+
+  while (packagePath !== (packageBase = path.dirname(packagePath))) packagePaths.push(packagePath = packageBase)
+
+  return packagePaths.find((packagePath) => {
+    try {
+      /*
+       *  Skip over `require`
+       */
+      const fileData = fs.readFileSync(path.join(packagePath, 'package.json'), 'utf8')
+      const json = JSON.parse(fileData)
+
+      return (
+        Reflect.has(json, '_moduleAliases') ||
+        Reflect.has(json, '_moduleDirectories')
+      )
+    } catch (e) {
+      return false
+    }
+  })
+}
+
+function getPackagePathFromCache (packageBase, cache = CACHE) {
+  if (cache.has(packageBase)) return cache.get(packageBase)
+}
+
+function setPackagePathIntoCache (packageBase, packagePath, cache = CACHE) {
+  if (!cache.has(packageBase)) cache.set(packageBase, packagePath)
+}
+
+function removePackageBaseFromCache (packageBase, cache = CACHE) {
+  cache.delete(packageBase)
+}
+
+/*
+ *  `packageBase` is the directory above/in which to find package.json
+ *
+ *  Aliased paths will be relative from there
+ */
+function register (packageBase = process.cwd(), cache = CACHE) {
+  packageBase = packageBase.replace(/\/package\.json$/, '')
+
+  const packagePath = getPackagePathFromCache(packageBase, cache) || getPackagePathFromFileSystem(packageBase)
+
+  if (!packagePath) throw new Error(`(1) No \`package.json\` found for ${packageBase}`)
+
+  setPackagePath(packagePath)
+  setPackagePathIntoCache(packageBase, packagePath, cache)
+
+  try {
+    const packageJson = require(path.join(packagePath, 'package.json'))
+
+    const {
+      _moduleAliases: aliases = {},
+      _moduleDirectories: directories = []
+    } = packageJson
+
+    registerModuleAliases(aliases)
+
+    registerModuleDirectories(directories)
+  } catch (e) {
+    removePackageBaseFromCache(cache)
+
+    throw new Error(`(2) No \`package.json\` found for ${packageBase}`)
   }
 }
 
-function getMainModule () {
-  return require.main._simulateRepl ? undefined : require.main
-}
-
-module.exports = init
+module.exports = register
 module.exports.addPath = addPath
 module.exports.addAlias = addAlias
 module.exports.addAliases = addAliases
-module.exports.isPathMatchesAlias = isPathMatchesAlias
+module.exports.matches = matches
 module.exports.reset = reset
