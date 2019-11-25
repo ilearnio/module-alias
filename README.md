@@ -30,7 +30,7 @@ Add configuration to `package.json`:
 ```js
 {
   "_moduleAliases": {
-    "@root"      : ".", // Application's root
+    "@root"      : ".",
     "@deep"      : "src/some/very/deep/directory/or/file",
     "@my_module" : "lib/some-file.js",
     "something"  : "src/foo"
@@ -51,7 +51,7 @@ Add configuration to `package.json`:
 Then include this line at the top of your module:
 
 ```js
-require('module-alias/register')
+require('@ministryofjustice/module-alias/register')
 ```
 
 `@ministryofjustice/module-alias` will resolve the location of `package.json` and register any aliases contained in it before applying the alias to any `require` calls made by your module.
