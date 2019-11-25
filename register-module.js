@@ -1,1 +1,1 @@
-module.exports = ({ path } = {}) => require('.')(path)
+module.exports = ({ path } = module.parent || {}) => require('.')(path)

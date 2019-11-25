@@ -1,6 +1,1 @@
-const {
-  parent
-} = module
-
-if (parent) require('.')(parent.path)
-else require('.')()
+module.exports = require('./register-module')(module)

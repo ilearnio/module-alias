@@ -31,12 +31,6 @@
   ],
   "license": "MIT",
   "main": "./index.js",
-  "files": [
-    "index.js",
-    "register.js",
-    "README.md",
-    "LICENSE"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/@ministryofjustice/module-alias.git"
