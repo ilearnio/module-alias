@@ -127,7 +127,7 @@ describe('`@ministryofjustice/module-alias`', () => {
         process.chdir(CWD)
       })
 
-      it('registers module aliases the `package.json` nearest to the user-defined path', () => {
+      it('registers module aliases from the `package.json` nearest to the user-defined path', () => {
         process.chdir(CWD)
 
         moduleAlias(path.resolve('./test/src'))
