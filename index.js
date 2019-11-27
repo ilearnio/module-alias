@@ -1,6 +1,8 @@
 const Module = require('module')
 const path = require('path')
-const fs = require('fs')
+const {
+  readFileSync
+} = require('fs')
 
 let MODULE_PATH_LIST = []
 
@@ -82,18 +84,18 @@ function addPath (modulePath) {
   }
 }
 
-function addAliases (aliases) {
-  Object.entries(aliases)
-    .forEach(([alias, modulePath]) => {
-      addAlias(alias, modulePath)
-    })
-}
-
 function addAlias (alias, modulePath) {
   const normalizedModulePath = path.normalize(path.join(PACKAGE_PATH, modulePath))
 
   ALIAS_PATH_CACHE.set(alias, normalizedModulePath)
   ALIAS_KEY_LIST = Array.from(ALIAS_PATH_CACHE.keys()).sort().reverse()
+}
+
+function addAliases (aliases) {
+  Object.entries(aliases)
+    .forEach(([alias, modulePath]) => {
+      addAlias(alias, modulePath)
+    })
 }
 
 function reset () {
@@ -165,7 +167,7 @@ function findPackageJson (packagePath) {
      *  Skip over `require`
      */
     const filePath = path.join(packagePath, 'package.json')
-    const fileData = fs.readFileSync(filePath, 'utf8')
+    const fileData = readFileSync(filePath, 'utf8')
     const json = JSON.parse(fileData)
 
     return (
