@@ -51,7 +51,7 @@ function removePathFromPaths (modulePath, paths) {
 }
 
 function addPath (modulePath) {
-  const normalizedModulePath = path.normalize(path.join(getPackagePath(), modulePath))
+  const normalizedModulePath = path.normalize(path.join(PACKAGE_PATH, modulePath))
 
   if (!MODULE_PATH_LIST.includes(normalizedModulePath)) {
     MODULE_PATH_LIST.push(normalizedModulePath)
@@ -89,14 +89,14 @@ function addAliases (aliases) {
     })
 }
 
-function addAlias (alias, modulePath, aliasPathCache = ALIAS_PATH_CACHE) {
-  const normalizedModulePath = path.normalize(path.join(getPackagePath(), modulePath))
+function addAlias (alias, modulePath) {
+  const normalizedModulePath = path.normalize(path.join(PACKAGE_PATH, modulePath))
 
-  aliasPathCache.set(alias, normalizedModulePath)
-  ALIAS_KEY_LIST = Array.from(aliasPathCache.keys()).sort().reverse()
+  ALIAS_PATH_CACHE.set(alias, normalizedModulePath)
+  ALIAS_KEY_LIST = Array.from(ALIAS_PATH_CACHE.keys()).sort().reverse()
 }
 
-function reset (packageBaseCache = PACKAGE_BASE_CACHE, aliasPathCache = ALIAS_PATH_CACHE) {
+function reset () {
   Object.keys(require.cache).forEach((key) => { delete require.cache[key] })
 
   const moduleMain = require.main
@@ -133,8 +133,8 @@ function reset (packageBaseCache = PACKAGE_BASE_CACHE, aliasPathCache = ALIAS_PA
 
   MODULE_PATH_LIST = []
 
-  packageBaseCache.clear()
-  aliasPathCache.clear()
+  PACKAGE_BASE_CACHE.clear()
+  ALIAS_PATH_CACHE.clear()
 
   ALIAS_KEY_LIST = []
 
@@ -159,48 +159,46 @@ function registerModuleDirectories (directories = []) {
     })
 }
 
-function getPackagePath () {
-  return PACKAGE_PATH
-}
+function findPackageJson (packagePath) {
+  try {
+    /*
+     *  Skip over `require`
+     */
+    const filePath = path.join(packagePath, 'package.json')
+    const fileData = fs.readFileSync(filePath, 'utf8')
+    const json = JSON.parse(fileData)
 
-function setPackagePath (packagePath) {
-  PACKAGE_PATH = packagePath
+    return (
+      Reflect.has(json, '_moduleAliases') ||
+      Reflect.has(json, '_moduleDirectories')
+    )
+  } catch (e) {
+    return false
+  }
 }
 
 function getPackagePathFromFileSystem (packageBase) {
   let packagePath = path.dirname(packageBase)
-  const packagePaths = [packageBase, packagePath]
+  const packagePaths = [
+    packageBase,
+    packagePath
+  ]
 
   while (packagePath !== (packageBase = path.dirname(packagePath))) packagePaths.push(packagePath = packageBase)
 
-  return packagePaths.find((packagePath) => {
-    try {
-      /*
-       *  Skip over `require`
-       */
-      const fileData = fs.readFileSync(path.join(packagePath, 'package.json'), 'utf8')
-      const json = JSON.parse(fileData)
-
-      return (
-        Reflect.has(json, '_moduleAliases') ||
-        Reflect.has(json, '_moduleDirectories')
-      )
-    } catch (e) {
-      return false
-    }
-  })
+  return packagePaths.find(findPackageJson)
 }
 
-function getPackagePathFromCache (packageBase, packageBaseCache = PACKAGE_BASE_CACHE) {
-  if (packageBaseCache.has(packageBase)) return packageBaseCache.get(packageBase)
+function getPackagePathFromCache (packageBase) {
+  if (PACKAGE_BASE_CACHE.has(packageBase)) return PACKAGE_BASE_CACHE.get(packageBase)
 }
 
-function setPackagePathIntoCache (packageBase, packagePath, packageBaseCache = PACKAGE_BASE_CACHE) {
-  if (!packageBaseCache.has(packageBase)) packageBaseCache.set(packageBase, packagePath)
+function setPackagePathIntoCache (packageBase, packagePath) {
+  if (!PACKAGE_BASE_CACHE.has(packageBase)) PACKAGE_BASE_CACHE.set(packageBase, packagePath)
 }
 
-function removePackageBaseFromCache (packageBase, packageBaseCache = PACKAGE_BASE_CACHE) {
-  packageBaseCache.delete(packageBase)
+function removePackageBaseFromCache (packageBase) {
+  PACKAGE_BASE_CACHE.delete(packageBase)
 }
 
 /*
@@ -208,15 +206,16 @@ function removePackageBaseFromCache (packageBase, packageBaseCache = PACKAGE_BAS
  *
  *  Aliased paths will be relative from there
  */
-function register (packageBase = process.cwd(), packageBaseCache = PACKAGE_BASE_CACHE) {
+function register (packageBase = process.cwd()) {
   packageBase = packageBase.replace(/\/package\.json$/, '')
 
-  const packagePath = getPackagePathFromCache(packageBase, packageBaseCache) || getPackagePathFromFileSystem(packageBase)
+  const packagePath = getPackagePathFromCache(packageBase) || getPackagePathFromFileSystem(packageBase)
 
   if (!packagePath) throw new Error(`(1) No \`package.json\` found for ${packageBase}`)
 
-  setPackagePath(packagePath)
-  setPackagePathIntoCache(packageBase, packagePath, packageBaseCache)
+  PACKAGE_PATH = packagePath
+
+  setPackagePathIntoCache(packageBase, packagePath)
 
   try {
     const packageJson = require(path.join(packagePath, 'package.json'))
@@ -230,7 +229,7 @@ function register (packageBase = process.cwd(), packageBaseCache = PACKAGE_BASE_
 
     registerModuleDirectories(directories)
   } catch (e) {
-    removePackageBaseFromCache(packageBaseCache)
+    removePackageBaseFromCache(packageBase)
 
     throw new Error(`(2) No \`package.json\` found for ${packageBase}`)
   }
