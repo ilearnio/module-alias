@@ -2,12 +2,12 @@ const Module = require('module')
 const path = require('path')
 const fs = require('fs')
 
-let MODULE_PATHS = []
-let MODULE_ALIAS_HASH = {}
-let MODULE_ALIAS_KEYS = []
+let MODULE_PATH_LIST = []
 
-const CACHE = new Map()
+const ALIAS_PATH_CACHE = new Map()
+let ALIAS_KEY_LIST = []
 
+const PACKAGE_BASE_CACHE = new Map()
 let PACKAGE_PATH = process.cwd()
 
 const {
@@ -16,29 +16,18 @@ const {
 } = Module
 
 function resolveModuleAlias (modulePath) {
-  let i = 0
-  const j = MODULE_ALIAS_KEYS.length
+  const aliasKey = ALIAS_KEY_LIST.find((aliasKey) => matches(modulePath, aliasKey))
+  if (aliasKey) {
+    const aliasPath = ALIAS_PATH_CACHE.get(aliasKey)
 
-  /*
-   * The array is (already) sorted and reversed
-   * so that the loop can match the longest alias
-   * before the shortest
-   */
-  for (i, j; i < j; i++) {
-    const aliasKey = MODULE_ALIAS_KEYS[i]
-
-    if (matches(modulePath, aliasKey)) {
-      const moduleAliasPath = MODULE_ALIAS_HASH[aliasKey]
-
-      return path.join(moduleAliasPath, modulePath.substr(aliasKey.length))
-    }
+    return path.join(aliasPath, modulePath.substr(aliasKey.length))
   }
 }
 
 Module._nodeModulePaths = function (modulePath) {
   let paths = nodeModulePaths.call(this, modulePath)
 
-  if (!modulePath.includes('node_modules')) paths = MODULE_PATHS.concat(paths)
+  if (!modulePath.includes('node_modules')) paths = MODULE_PATH_LIST.concat(paths)
 
   return paths
 }
@@ -47,32 +36,25 @@ Module._resolveFilename = function (modulePath, ...args) {
   return resolveFilename.call(this, resolveModuleAlias(modulePath) || modulePath, ...args)
 }
 
-function matches (modulePath, alias) {
-  if (modulePath.startsWith(alias)) {
-    if (modulePath.length === alias.length) return true
-    if (modulePath[alias.length] === '/') return true
-  }
-
-  return false
-}
+const matches = (modulePath, alias) => (modulePath === alias) || (modulePath.startsWith(alias) && modulePath.charAt(alias.length) === '/')
 
 function addPathIntoPaths (modulePath, paths) {
-  modulePath = path.normalize(modulePath)
+  const normalizedModulePath = path.normalize(modulePath)
 
-  if (!paths.includes(modulePath)) paths.unshift(modulePath)
+  if (!paths.includes(normalizedModulePath)) paths.unshift(normalizedModulePath)
 }
 
 function removePathFromPaths (modulePath, paths) {
-  modulePath = path.normalize(modulePath)
+  const normalizedModulePath = path.normalize(modulePath)
 
-  while (paths.includes(modulePath)) paths.splice(paths.indexOf(modulePath), 1)
+  while (paths.includes(normalizedModulePath)) paths.splice(paths.indexOf(normalizedModulePath), 1)
 }
 
 function addPath (modulePath) {
-  modulePath = path.normalize(path.join(getPackagePath(), modulePath))
+  const normalizedModulePath = path.normalize(path.join(getPackagePath(), modulePath))
 
-  if (!MODULE_PATHS.includes(modulePath)) {
-    MODULE_PATHS.push(modulePath)
+  if (!MODULE_PATH_LIST.includes(normalizedModulePath)) {
+    MODULE_PATH_LIST.push(normalizedModulePath)
 
     const moduleMain = require.main
 
@@ -81,7 +63,7 @@ function addPath (modulePath) {
         paths = []
       } = moduleMain
 
-      addPathIntoPaths(modulePath, paths)
+      addPathIntoPaths(normalizedModulePath, paths)
     }
 
     let {
@@ -93,7 +75,7 @@ function addPath (modulePath) {
         paths = []
       } = parent
 
-      addPathIntoPaths(modulePath, paths)
+      addPathIntoPaths(normalizedModulePath, paths)
 
       parent = parent.parent
     }
@@ -107,17 +89,19 @@ function addAliases (aliases) {
     })
 }
 
-function addAlias (alias, modulePath) {
-  MODULE_ALIAS_HASH[alias] = path.normalize(path.join(getPackagePath(), modulePath))
-  MODULE_ALIAS_KEYS = Object.keys(MODULE_ALIAS_HASH).sort().reverse()
+function addAlias (alias, modulePath, aliasPathCache = ALIAS_PATH_CACHE) {
+  const normalizedModulePath = path.normalize(path.join(getPackagePath(), modulePath))
+
+  aliasPathCache.set(alias, normalizedModulePath)
+  ALIAS_KEY_LIST = Array.from(aliasPathCache.keys()).sort().reverse()
 }
 
-function reset (cache = CACHE) {
+function reset (packageBaseCache = PACKAGE_BASE_CACHE, aliasPathCache = ALIAS_PATH_CACHE) {
   Object.keys(require.cache).forEach((key) => { delete require.cache[key] })
 
   const moduleMain = require.main
 
-  MODULE_PATHS.forEach((modulePath) => {
+  MODULE_PATH_LIST.forEach((modulePath) => {
     const {
       paths = []
     } = module
@@ -147,11 +131,12 @@ function reset (cache = CACHE) {
     }
   })
 
-  MODULE_PATHS = []
-  MODULE_ALIAS_HASH = {}
-  MODULE_ALIAS_KEYS = []
+  MODULE_PATH_LIST = []
 
-  cache.clear()
+  packageBaseCache.clear()
+  aliasPathCache.clear()
+
+  ALIAS_KEY_LIST = []
 
   PACKAGE_PATH = process.cwd()
 }
@@ -206,16 +191,16 @@ function getPackagePathFromFileSystem (packageBase) {
   })
 }
 
-function getPackagePathFromCache (packageBase, cache = CACHE) {
-  if (cache.has(packageBase)) return cache.get(packageBase)
+function getPackagePathFromCache (packageBase, packageBaseCache = PACKAGE_BASE_CACHE) {
+  if (packageBaseCache.has(packageBase)) return packageBaseCache.get(packageBase)
 }
 
-function setPackagePathIntoCache (packageBase, packagePath, cache = CACHE) {
-  if (!cache.has(packageBase)) cache.set(packageBase, packagePath)
+function setPackagePathIntoCache (packageBase, packagePath, packageBaseCache = PACKAGE_BASE_CACHE) {
+  if (!packageBaseCache.has(packageBase)) packageBaseCache.set(packageBase, packagePath)
 }
 
-function removePackageBaseFromCache (packageBase, cache = CACHE) {
-  cache.delete(packageBase)
+function removePackageBaseFromCache (packageBase, packageBaseCache = PACKAGE_BASE_CACHE) {
+  packageBaseCache.delete(packageBase)
 }
 
 /*
@@ -223,15 +208,15 @@ function removePackageBaseFromCache (packageBase, cache = CACHE) {
  *
  *  Aliased paths will be relative from there
  */
-function register (packageBase = process.cwd(), cache = CACHE) {
+function register (packageBase = process.cwd(), packageBaseCache = PACKAGE_BASE_CACHE) {
   packageBase = packageBase.replace(/\/package\.json$/, '')
 
-  const packagePath = getPackagePathFromCache(packageBase, cache) || getPackagePathFromFileSystem(packageBase)
+  const packagePath = getPackagePathFromCache(packageBase, packageBaseCache) || getPackagePathFromFileSystem(packageBase)
 
   if (!packagePath) throw new Error(`(1) No \`package.json\` found for ${packageBase}`)
 
   setPackagePath(packagePath)
-  setPackagePathIntoCache(packageBase, packagePath, cache)
+  setPackagePathIntoCache(packageBase, packagePath, packageBaseCache)
 
   try {
     const packageJson = require(path.join(packagePath, 'package.json'))
@@ -245,7 +230,7 @@ function register (packageBase = process.cwd(), cache = CACHE) {
 
     registerModuleDirectories(directories)
   } catch (e) {
-    removePackageBaseFromCache(cache)
+    removePackageBaseFromCache(packageBaseCache)
 
     throw new Error(`(2) No \`package.json\` found for ${packageBase}`)
   }
