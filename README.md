@@ -27,7 +27,7 @@ require('my_private_module');
 import module from 'my_private_module'
 ```
 
-**WARNING:** This module should not be used in other npm modules since it modifies the default `require` behavior! It is designed to be used for development of final projects i.e. web-sites, applications etc.
+**WARNING:** Although this module was designed for end-user projects (websites, etc.), it _can_ be used with library code, but this requires some care and a bit of work. Please see [Using in a library](#using-in-a-library).
 
 ## Install
 
@@ -159,6 +159,16 @@ Unfortunately, `module-alias` itself would not work from Jest due to a custom be
 ```
 
 More details on the [official documentation](https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string--arraystring).
+
+## Using in a library
+
+You can use `module-alias` within a library, however there are a few things to take into consideration.
+
+1. As the aliases are global, you should make sure your aliases are unique, to avoid conflicts with end-user code, or with other libraries using module-alias. For example, you could prefix your aliases with '@my-lib/', and then use require('@my-lib/deep').
+2. The vanilla "register" mechanism does not work, you cannot simply use `require('module-alias/register')`, as it tries to find package.json in either the current working directory of your node process, or two levels down from node_modules/module-alias. It is extremely likely that this is end-user code. So, instead, your should either register aliases manually with moduleAlias.addAlias, or using something like `require('module-alias')(__dirname)`.
+
+Here is an [example project](https://github.com/Kehrlann/module-alias-library).
+
 
 ## Known incompatibilities
 
