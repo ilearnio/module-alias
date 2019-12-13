@@ -35,7 +35,7 @@ import module from 'my_private_module'
 npm i --save module-alias
 ```
 
-**BREAKING CHANGES:** Version 3 has a new way to add configurations. The older format is no longer supported in this version. If you want to use the older version, please read the "2.X Usage" below.
+**BREAKING CHANGES:** Version 3 has a new way to add configurations. The older format is no longer supported in this version. If you are using the older version, please check out the [documentation for version 2.X](https://github.com/ilearnio/module-alias/blob/c82d4bbcb6677d8abcf2cd4446b4f03e6e2feff4/README.md).
 
 ## Usage
 
@@ -64,7 +64,7 @@ module.exports = {
 
 If you don't have `module-alias.config.js` in your application's root directory, the module will load your configurations from your `package.json` file.
 
-```js
+```json
     ...
     "module-alias": {
       // Aliases
@@ -101,7 +101,7 @@ import veryDeepModule from '@deep/my-module'
 import customModule from 'my_private_module' // module from `node_modules_custom` directory
 ```
 
-## Advanced usage
+### Custom config path
 
 If you don't want to create `module-alias.config.js` file or modify your `package.json` file, you can create a `.js` file with any name and pass the path to the module.
 
@@ -120,6 +120,8 @@ require('module-alias')({
   base: 'path/to/the/sub-directory'
 })
 ```
+
+## Advanced usage
 
 If you prefer to set it all up programmatically, then the following methods are available for you:
 
@@ -195,122 +197,14 @@ module.exports = {
 
 ```js
 // webpack.config.js
-const config = require('./package.json')
+const config = require('./package.json')['module-alias']
 
 module.exports = {
   entry: { ... },
   resolve: {
     root: __dirname,
-    alias: config.module-alias.aliases || {},
-    modules: config.module-alias.moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
-  }
-}
-```
-
-## 2.X Usage
-
-Add your custom configuration to your `package.json` (in your application's root)
-
-```js
-// Aliases
-"_moduleAliases": {
-  "@root"      : ".", // Application's root
-  "@deep"      : "src/some/very/deep/directory/or/file",
-  "@my_module" : "lib/some-file.js",
-  "something"  : "src/foo", // Or without @. Actually, it could be any string
-}
-
-// Custom module directories, just like `node_modules` but with your private modules (optional)
-"_moduleDirectories": ["node_modules_custom"],
-```
-
-Then add this line at the very main file of your app, before any code
-
-```js
-require('module-alias/register')
-```
-
-**And you're all set!** Now you can do stuff like:
-
-```js
-require('something')
-const module = require('@root/some-module')
-const veryDeepModule = require('@deep/my-module')
-const customModule = require('my_private_module') // module from `node_modules_custom` directory
-
-// Or ES6
-import 'something'
-import module from '@root/some-module'
-import veryDeepModule from '@deep/my-module'
-import customModule from 'my_private_module' // module from `node_modules_custom` directory
-```
-
-## Advanced usage
-
-If you don't want to modify your `package.json` or you just prefer to set it all up programmatically, then the following methods are available for you:
-
-* `addAlias('alias', 'target_path')` - register a single alias
-* `addAliases({ 'alias': 'target_path', ... }) ` - register multiple aliases
-* `addPath(path)` - Register custom modules directory (like node_modules, but with your own modules)
-
-_Examples:_
-```js
-const moduleAlias = require('module-alias')
-
-//
-// Register alias
-//
-moduleAlias.addAlias('@client', __dirname + '/src/client')
-
-// Or multiple aliases
-moduleAlias.addAliases({
-  '@root'  : __dirname,
-  '@client': __dirname + '/src/client',
-  ...
-})
-
-// Custom handler function (starting from v2.1)
-moduleAlias.addAlias('@src', (fromPath, request, alias) => {
-  // fromPath - Full path of the file from which `require` was called
-  // request - The path (first argument) that was passed into `require`
-  // alias - The same alias that was passed as first argument to `addAlias` (`@src` in this case)
-
-  // Return any custom target path for the `@src` alias depending on arguments
-  if (fromPath.startsWith(__dirname + '/others')) return __dirname + '/others'
-  return __dirname + '/src'
-})
-
-//
-// Register custom modules directory
-//
-moduleAlias.addPath(__dirname + '/node_modules_custom')
-moduleAlias.addPath(__dirname + '/src')
-
-//
-// Import settings from a specific package.json
-//
-moduleAlias(__dirname + '/package.json')
-
-// Or let module-alias to figure where your package.json is
-// located. By default it will look in the same directory
-// where you have your node_modules (application's root)
-moduleAlias()
-```
-
-## Usage with WebPack
-
-Luckily, WebPack has a built in support for aliases and custom modules directories so it's easy to make it work on the client side as well!
-
-```js
-// webpack.config.js
-const npm_package = require('./package.json')
-
-module.exports = {
-  entry: { ... },
-  resolve: {
-    root: __dirname,
-    alias: npm_package._moduleAliases || {},
-    modules: npm_package._moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
+    alias: config.aliases || {},
+    modules: config.moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
   }
 }
 ```
