@@ -177,27 +177,10 @@ moduleAlias()
 
 Luckily, WebPack has a built in support for aliases and custom modules directories so it's easy to make it work on the client side as well!
 
-### With module-alias.config.js
-
 ```js
 // webpack.config.js
 const config = require('./module-alias.config.js')
-
-module.exports = {
-  entry: { ... },
-  resolve: {
-    root: __dirname,
-    alias: config.aliases || {},
-    modules: config.moduleDirectories || [] // eg: ["node_modules", "node_modules_custom", "src"]
-  }
-}
-```
-
-### With package.json
-
-```js
-// webpack.config.js
-const config = require('./package.json')['module-alias']
+// const config = require('./package.json')['module-alias']
 
 module.exports = {
   entry: { ... },
