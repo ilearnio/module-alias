@@ -209,6 +209,31 @@ module.exports = {
 }
 ```
 
+More details on the [official documentation](https://webpack.js.org/configuration/resolve).
+
+## Usage with Jest
+
+Unfortunately, `module-alias` itself would not work from Jest due to a custom behavior of Jest's `require`. But you can use it's own aliasing mechanism instead. The configuration can be defined either in `package.json` or `jest.config.js`. The example below is for `package.json`:
+
+```js
+"jest": {
+  "moduleNameMapper": {
+    "@root/(.*)": "<rootDir>/$1",
+    "@client/(.*)": "<rootDir>/src/client/$1"
+  },
+}
+```
+
+More details on the [official documentation](https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string).
+
+## Known incompatibilities
+
+This module does not play well with:
+
+- Front-end JavaScript code. Module-alias is designed for server side so do not expect it to work with front-end frameworks (React, Vue, ...) as they tend to use Webpack. Use Webpack's [resolve.alias](https://webpack.js.org/configuration/resolve/#resolvealias) mechanism instead.
+- [Jest](https://jestjs.io), which discards node's module system entirely to use it's own module system, bypassing module-alias.
+- The [NCC compiler](https://github.com/zeit/ncc), as it uses WebPack under the hood without exposing properties, such as resolve.alias. It is not [something they wish to do](https://github.com/zeit/ncc/pull/460).
+
 ## How it works?
 
 In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you use `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it replaces the alias in the string with the target path of the alias.
