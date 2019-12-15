@@ -67,15 +67,12 @@ If you don't have `module-alias.config.js` in your application's root directory,
 ```json
     ...
     "module-alias": {
-      // Aliases
       "aliases": {
-        "@root"      : ".", // Application's root
+        "@root"      : ".",
         "@deep"      : "src/some/very/deep/directory/or/file",
         "@my_module" : "lib/some-file.js",
-        "something"  : "src/foo", // Or without @. Actually, it could be any string
-      },
-      
-      // Custom module directories, just like `node_modules` but with your private modules (optional)
+        "something"  : "src/foo",
+      },      
       "moduleDirectories": ["node_modules_custom"] 
     }
 ```
