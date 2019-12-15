@@ -209,7 +209,7 @@ function init (options) {
 
   var candidatePackagePaths
   if (options.base) {
-    candidatePackagePaths = [options.base]
+    candidatePackagePaths = [nodePath.resolve(options.base)]
   } else {
     // There is probably 99% chance that the project root directory in located
     // above the node_modules directory,
