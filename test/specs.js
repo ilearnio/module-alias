@@ -148,8 +148,17 @@ describe('module-alias', function () {
         expectAliasesToBeImported()
       })
 
-      it('should import settings from any config file', function () {
+      it('should import settings from any config file using absolute path', function () {
         moduleAlias(path.join(__dirname, 'src', 'default_module_alias', 'config.js'))
+
+        expectAliasesToBeImported()
+
+        // Deleting config.js from require cache since we have to re-require it for next test.
+        delete require.cache[path.join(__dirname, 'src', 'default_module_alias', 'config.js')]
+      })
+
+      it('should import settings from any config file using relative path', function () {
+        moduleAlias('./test/src/default_module_alias/config.js')
 
         expectAliasesToBeImported()
       })
