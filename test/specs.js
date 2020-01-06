@@ -136,6 +136,11 @@ describe('module-alias', function () {
     })
 
     context('when base path is provided', function () {
+      afterEach(function () {
+        // Deleting config.js from require cache since we have to re-require it for next test.
+        delete require.cache[path.join(__dirname, 'src', 'default_module_alias', 'config.js')]
+      })
+
       it('should import settings from module-alias.config.js by default', function () {
         moduleAlias(path.join(__dirname, 'src', 'default_module_alias'))
 
@@ -152,9 +157,6 @@ describe('module-alias', function () {
         moduleAlias(path.join(__dirname, 'src', 'default_module_alias', 'config.js'))
 
         expectAliasesToBeImported()
-
-        // Deleting config.js from require cache since we have to re-require it for next test.
-        delete require.cache[path.join(__dirname, 'src', 'default_module_alias', 'config.js')]
       })
 
       it('should import settings from any config file using relative path', function () {
