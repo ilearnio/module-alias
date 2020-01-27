@@ -1,4 +1,9 @@
-.eslintrc
+.dependabot
+.circleci
 .npmrc
+.npmignore
 .nvmrc
-test
+.eslintignore
+.eslintrc
+
+*.sh
