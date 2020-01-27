@@ -1,7 +1,7 @@
 {
   "name": "@ministryofjustice/module-alias",
   "description": "Module aliases (based on work by Nick Gavrilov artnikpro@gmail.com)",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "author": "Form Builder Team <form-builder-team@digital.justice.gov.uk>",
   "contributors": [
     {
@@ -44,8 +44,8 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "husky": "^4.0.7",
-    "mocha": "^7.0.0"
+    "husky": "^4.2.1",
+    "mocha": "^7.0.1"
   },
   "husky": {
     "hooks": {
