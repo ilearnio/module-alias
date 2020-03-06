@@ -50,7 +50,7 @@ Add configuration to `package.json`:
 
 **Module Alias** will resolve the location of `package.json` and register any aliases contained in it before applying the alias to `require` during execution.
 
-### Registering from an _entry point_###
+### Registering from an _entry point_
 
 Include this line at the top of your _entry point_ JS file:
 
@@ -59,7 +59,7 @@ require('@ministryofjustice/module-alias/register')
 ```
 The path to `package.json` is determined from the location of the _process current working directory_. (Ordinarily, this is _root_ directory of the application.)
 
-### Registering from a _module_###
+### Registering from a _module_
 
 Include this line at the top of _any_ JS file:
 ```js
