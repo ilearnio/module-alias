@@ -191,7 +191,7 @@ function init (options) {
   var aliases = npmPackage._moduleAliases || {}
 
   for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
+    if (aliases[alias][0] !== '/' && !/^[a-zA-Z]\:/.test(aliases[alias])) {
       aliases[alias] = nodePath.join(base, aliases[alias])
     }
   }
