@@ -8,6 +8,7 @@ var Module = module.constructor.length > 1
   : BuiltinModule
 
 var nodePath = require('path')
+var nodeFS = require('fs')
 
 var modulePaths = []
 var moduleAliases = {}
@@ -28,25 +29,88 @@ Module._nodeModulePaths = function (from) {
 
 var oldResolveFilename = Module._resolveFilename
 Module._resolveFilename = function (request, parentModule, isMain, options) {
-  for (var i = moduleAliasNames.length; i-- > 0;) {
+  var found = false
+  for (var i = moduleAliasNames.length; i-- > 0 && !found;) {
     var alias = moduleAliasNames[i]
     if (isPathMatchesAlias(request, alias)) {
-      var aliasTarget = moduleAliases[alias]
-      // Custom function handler
-      if (typeof moduleAliases[alias] === 'function') {
-        var fromPath = parentModule.filename
-        aliasTarget = moduleAliases[alias](fromPath, request, alias)
-        if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error('[module-alias] Expecting custom handler function to return path.')
+      var aliasTargets = moduleAliases[alias]
+
+      for (var v = 0; v < aliasTargets.length && !found; v++) {
+        var aliasTarget = aliasTargets[v]
+
+        // First check for a simple string
+        if (typeof aliasTarget === 'string') {
+          // No-op
+        // Custom function handler
+        } else if (typeof aliasTarget === 'function') {
+          var fromPath = parentModule.filename
+          aliasTarget = aliasTarget(fromPath, request, alias)
+          if (!aliasTarget || typeof aliasTarget !== 'string') {
+            throw new Error('[module-alias] Expecting custom handler function to return path.')
+          }
+        // And for everything else...
+        } else {
+          throw new Error('[module-alias] Expecting alias target to be string or function.')
+        }
+
+        // Construct the path
+        request = nodePath.join(aliasTarget, request.substr(alias.length))
+
+        // Now, we need to decide whether or not we'll be continuing our loop
+        // through targets or stopping here. We're going to do this by checking
+        // for the existence of a file matching request or a directory
+        // containing a package.json matching the request.
+
+        // If it's a directory and it contains a package.json, index, index.js,
+        // or index.node file, we're good to go.
+        if (
+          isDirectory(request) && (
+            isFile(nodePath.join(request, 'package.json')) ||
+            isFile(nodePath.join(request, 'index')) ||
+            isFile(nodePath.join(request, 'index.js')) ||
+            isFile(nodePath.join(request, 'index.node'))
+          )
+        ) {
+          found = true
+          break
+        // If it's a file as-is or when appended with .js or .node, rock and
+        // roll.
+        } else if (
+          isFile(request) ||
+          isFile(request + '.js') ||
+          isFile(request + '.node')
+        ) {
+          found = true
+          break
         }
       }
-      request = nodePath.join(aliasTarget, request.substr(alias.length))
-      // Only use the first match
+
+      // There should be only one alias that matches, but you never know.
       break
     }
   }
 
   return oldResolveFilename.call(this, request, parentModule, isMain, options)
+}
+
+function isFile (path) {
+  var stat
+  try {
+    stat = nodeFS.statSync(path)
+  } catch (err) {
+    return false
+  }
+  return stat.isFile()
+}
+
+function isDirectory (path) {
+  var stat
+  try {
+    stat = nodeFS.statSync(path)
+  } catch (err) {
+    return false
+  }
+  return stat.isDirectory()
 }
 
 function isPathMatchesAlias (path, alias) {
@@ -103,8 +167,19 @@ function addAliases (aliases) {
   }
 }
 
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
+function addAlias (alias, targets) {
+  if (moduleAliases[alias] === undefined) {
+    moduleAliases[alias] = []
+  }
+
+  if ((typeof targets === 'object') && (targets.constructor.name === 'Array')) {
+    moduleAliases[alias] = moduleAliases[alias].concat(targets)
+  } else if ((typeof targets === 'string') || (typeof targets === 'function')) {
+    moduleAliases[alias].push(targets)
+  } else {
+    throw new Error('[module-alias] Expecting alias targets to be string, function, or array of strings and/or functions.')
+  }
+
   // Cost of sorting is lower here than during resolution
   moduleAliasNames = Object.keys(moduleAliases)
   moduleAliasNames.sort()
