@@ -158,7 +158,7 @@ Unfortunately, `module-alias` itself would not work from Jest due to a custom be
 }
 ```
 
-More details on the [official documentation](https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string).
+More details on the [official documentation](https://jestjs.io/docs/en/configuration#modulenamemapper-objectstring-string--arraystring).
 
 ## Known incompatibilities
 
