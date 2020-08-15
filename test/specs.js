@@ -231,7 +231,9 @@ describe('module-alias', function () {
   })
 
   it('should handle mocha test', function (done) {
-    exec('mocha ' + path.join(__dirname, '/src/mocha/test.js'), function (_, result) {
+    var mochaPath = path.join(__dirname, '..', 'node_modules', '.bin', 'mocha')
+    var testFilePath = path.join(__dirname, 'src', 'mocha', 'test.js')
+    exec(mochaPath + ' ' + testFilePath, function (_, result) {
       expect(result.toString('utf8')).to.match(/1 passing/)
       done()
     })
