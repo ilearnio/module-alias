@@ -170,6 +170,12 @@ describe('module-alias', function () {
 
         expectAliasesToBeImported()
       })
+
+      it('should import settings from legacy package.json file', function () {
+        moduleAlias(path.join(__dirname, 'src', 'legacy_package_json', 'package.json'))
+
+        expectAliasesToBeImported()
+      })
     })
 
     context('when module-alias package is nested (looking up __dirname/../../)', function () {
