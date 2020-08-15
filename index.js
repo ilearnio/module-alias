@@ -7,7 +7,6 @@ var Module = module.constructor.length > 1
   ? module.constructor
   : BuiltinModule
 
-var fs = require('fs')
 var nodePath = require('path')
 
 var modulePaths = []
@@ -150,17 +149,32 @@ function reset () {
 //
 
 // Load configuration from any file
-function loadConfigFile (configPath) {
+function readConfigFile (path) {
   try {
-    var config = require(configPath)
+    var config = require(path)
 
-    // ES6 export default
-    if (config && config.default) {
+    if (nodePath.basename(path) === 'package.json') {
+      // Support for legacy package.json config definitions
+      if (config._moduleAliases || config._moduleDirectories) {
+        config = {
+          aliases: config._moduleAliases,
+          moduleDirectories: config._moduleDirectories
+        }
+      }
+
+      if (config && config['module-alias']) {
+        config = config['module-alias']
+      }
+    } else if (config && config.default) { // ES module default export
       config = config.default
-    } else if (config && config['module-alias']) {
-      config = config['module-alias']
     }
 
+    if (config) {
+      config.aliases = config.aliases || {}
+      config.moduleDirectories = config.moduleDirectories || []
+    }
+
+    // Support ES6 export default
     return config
   } catch (e) {
     // Do nothing
@@ -168,113 +182,82 @@ function loadConfigFile (configPath) {
 }
 
 function loadConfig (base) {
-  var configPath = base
+  var candidateProjectPaths
+  if (base) {
+    candidateProjectPaths = [nodePath.resolve(base)]
+  } else {
+    // There is probably 99% chance that the project root directory in located above the
+    // node_modules directory, or that package.json is in the node process' current working
+    // directory (when running a package manager script, e.g. `yarn start` / `npm run start`)
+    candidateProjectPaths = [nodePath.join(__dirname, '../..'), process.cwd()]
+  }
+
   var config
+  var projectPath
+  for (var i in candidateProjectPaths) {
+    projectPath = candidateProjectPaths[i]
+    var filename = nodePath.basename(projectPath)
 
-  // Try to load the configuration file if the base path is provided.
-  // It could be either a package.json, or any JS file.
-  config = loadConfigFile(configPath)
+    if (/.\.(m?js|json)$/.test(filename)) { // check supported config file extensions
+      // Try custom config path
+      config = readConfigFile(projectPath)
+      projectPath = nodePath.dirname(projectPath)
+    } else {
+      // Try module-alias.config.js
+      config = readConfigFile(nodePath.join(projectPath, 'module-alias.config.js'))
 
-  // If a directory was provided as a base path, or base was not provided
-  // at all, try loading module-alias.config.js
-  if (!config) {
-    configPath = nodePath.join(base, 'module-alias.config.js')
-    config = loadConfigFile(configPath)
+      // Try package.json
+      if (!config) {
+        config = readConfigFile(nodePath.join(projectPath, 'package.json'))
+      }
+    }
+    if (config) break
   }
 
-  // Try package.json
-  if (!config) {
-    configPath = nodePath.join(base, 'package.json')
-    config = loadConfigFile(configPath)
+  return {
+    projectPath: projectPath,
+    config: config
   }
-
-  // No configuration found
-  if (!config) {
-    throw new Error('Failed to load configuration.')
-  }
-
-  return config
 }
 
 /**
- * Import aliases from package.json
+ * Initialize aliases from a config file
  * @param {object} options
  */
 function init (options) {
-  if (typeof options === 'string') {
-    options = { base: options }
-  }
-
   options = options || {}
 
-  var candidatePackagePaths
-  if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base)]
-  } else {
-    // There is probably 99% chance that the project root directory in located
-    // above the node_modules directory,
-    // Or that package.json is in the node process' current working directory (when
-    // running a package manager script, e.g. `yarn start` / `npm run start`)
-    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
-  }
+  var base = typeof options === 'string' ? options : options.base
 
-  var config
-  var base
-  for (var i in candidatePackagePaths) {
-    try {
-      base = candidatePackagePaths[i]
-
-      // Load the configuration
-      config = loadConfig(base)
-
-      break
-    } catch (e) {
-      // noop
-    }
-  }
+  var loadedConfigData = loadConfig(base)
+  var projectPath = loadedConfigData.projectPath
+  var config = loadedConfigData.config
 
   if (typeof config !== 'object') {
-    var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find configuration in any of:\n[' + pathString + ']')
+    throw new Error('[module-alias] Unable to find configuration file')
   }
 
   //
-  // Import aliases
+  // Register aliases
   //
 
-  // Get the base dir without the file
-  // Since the file has already been loaded, it should not fail at all
-  // but still to catch unexpected error
-  try {
-    base = fs.lstatSync(base).isFile() ? nodePath.dirname(base) : base
-  } catch (error) {
-    throw new Error('Unable to get base dir')
-  }
-
-  var aliases = config.aliases || {}
-
-  for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
+  var aliases = {}
+  for (var alias in config.aliases) {
+    if (config.aliases[alias][0] !== '/') {
+      aliases[alias] = nodePath.join(projectPath, config.aliases[alias])
     }
   }
-
   addAliases(aliases)
 
   //
   // Register custom module directories (like node_modules)
   //
 
-  var moduleDirectories = config.moduleDirectories || []
-
-  if (moduleDirectories instanceof Array) {
-    moduleDirectories.forEach(function (dir) {
-      if (dir === 'node_modules') return
-
-      var modulePath = nodePath.join(base, dir)
-      addPath(modulePath)
-    })
-  }
+  config.moduleDirectories.forEach(function (dir) {
+    if (dir === 'node_modules') return
+    var modulePath = nodePath.join(projectPath, dir)
+    addPath(modulePath)
+  })
 }
 
 function getMainModule () {
