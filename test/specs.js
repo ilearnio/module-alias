@@ -84,6 +84,68 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
+  it('should register an alias (addAlias) with multiple targets', function () {
+    moduleAlias.addAlias('@bazfoo', [
+      path.join(__dirname, 'src/bar/baz'),
+      path.join(__dirname, 'src/foo')
+    ])
+    moduleAlias.addAlias('@foobaz', [
+      path.join(__dirname, 'src/foo'),
+      path.join(__dirname, 'src/bar/baz')
+    ])
+
+    var value
+
+    try {
+      value = require('@bazfoo')
+    } catch (e) {}
+    expect(value).to.equal('Hello from baz')
+
+    try {
+      value = require('@foobaz')
+    } catch (e) {}
+    expect(value).to.equal('Hello from foo')
+  })
+
+  it('should register multiple aliases (addAliases) with multiple targets', function () {
+    moduleAlias.addAliases({
+      '@srcfoobar': [
+        path.join(__dirname, 'src'),
+        path.join(__dirname, 'src/foo/index.js'),
+        path.join(__dirname, 'src/bar')
+      ],
+      '@foobarsrc': [
+        path.join(__dirname, 'src/foo/index.js'),
+        path.join(__dirname, 'src/bar'),
+        path.join(__dirname, 'src')
+      ],
+      '@barsrcfoo': [
+        path.join(__dirname, 'src/bar'),
+        path.join(__dirname, 'src'),
+        path.join(__dirname, 'src/foo/index.js')
+      ],
+      'something/foo': [
+        path.join(__dirname, 'src/foo'),
+        path.join(__dirname, 'src/bar'),
+        path.join(__dirname, 'src'),
+        path.join(__dirname, 'src/foo/index.js')
+      ]
+    })
+
+    var src, foo, baz, something
+    try {
+      src = require('@srcfoobar/foo')
+      foo = require('@foobarsrc')
+      baz = require('@barsrcfoo/baz')
+      something = require('something/foo')
+    } catch (e) {}
+
+    expect(src).to.equal('Hello from foo')
+    expect(foo).to.equal('Hello from foo')
+    expect(baz).to.equal('Hello from baz')
+    expect(something).to.equal('Hello from foo')
+  })
+
   describe('importing settings from package.json', function () {
     function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
@@ -252,6 +314,55 @@ describe('module-alias', function () {
         }
       })
       expect(require('@src/baz')).to.equal('Hello from baz')
+      expect(require('@bar/index.js')).to.equal('Hello from foo')
+    })
+
+    it('should addAlias with multiple targets', function () {
+      moduleAlias.addAlias('@src', [
+        function (fromPath, request, alias) {
+          expect(fromPath).to.equal(__filename)
+          expect(request).to.equal('@src/baz')
+          expect(alias).to.equal('@src')
+          return path.join(__dirname, 'src/bar')
+        },
+        function (fromPath, request, alias) {
+          expect(fromPath).to.equal(__filename)
+          expect(request).to.equal('@src/foo')
+          expect(alias).to.equal('@src')
+          return path.join(__dirname, 'src')
+        }
+      ])
+      expect(require('@src/baz')).to.equal('Hello from baz')
+      expect(require('@src/foo')).to.equal('Hello from foo')
+    })
+
+    it('should addAliases with multiple targets', function () {
+      moduleAlias.addAliases({
+        '@src': [
+          function (fromPath, request, alias) {
+            expect(fromPath).to.equal(__filename)
+            expect(request).to.equal('@src/baz')
+            expect(alias).to.equal('@src')
+            return path.join(__dirname, 'src/bar')
+          },
+          function (fromPath, request, alias) {
+            expect(fromPath).to.equal(__filename)
+            expect(request).to.equal('@src/foo')
+            expect(alias).to.equal('@src')
+            return path.join(__dirname, 'src')
+          }
+        ],
+        '@bar': [
+          function (fromPath, request, alias) {
+            expect(fromPath).to.equal(__filename)
+            expect(request).to.equal('@bar/index.js')
+            expect(alias).to.equal('@bar')
+            return path.join(__dirname, 'src/foo')
+          }
+        ]
+      })
+      expect(require('@src/baz')).to.equal('Hello from baz')
+      expect(require('@src/foo')).to.equal('Hello from foo')
       expect(require('@bar/index.js')).to.equal('Hello from foo')
     })
 
