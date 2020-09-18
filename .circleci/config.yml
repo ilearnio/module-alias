@@ -44,7 +44,7 @@ jobs:
             if [ "$VERSION" != "$PUBLISHED_VERSION" ]
             then
               npm publish
-              curl -X POST -H 'Content-type: application/json' --data '{"text":":woohoo:  Successfully published fb-client $VERSION  :ship_it_parrot:"}' "$SLACK_WEBHOOK"
+              curl -X POST -H 'Content-type: application/json' --data "{\"text\":\":woohoo:  Successfully published ${CIRCLE_PROJECT_REPONAME} ${VERSION}  :ship_it_parrot:\"}" "$SLACK_WEBHOOK"
             fi
       - slack/status: *slack_status
 
