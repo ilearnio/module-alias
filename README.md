@@ -170,6 +170,14 @@ You can use `module-alias` within another NPM package, however there are a few t
 Here is an [example project](https://github.com/Kehrlann/module-alias-library).
 
 
+## Usage with esm
+
+[esm](https://www.npmjs.com/package/esm) tries to handle all imports when parsing a file, before actually loading any module. This means module-alias' `register` call will not be processed in time. To make `module-alias` work with `esm`, please consider using:
+
+```
+node -r module-alias/register -r esm index.js
+```
+
 ## Known incompatibilities
 
 This module does not play well with:
