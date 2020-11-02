@@ -39,7 +39,7 @@
     "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
     "eslint": "^7.2.0",
-    "eslint-config-standard": "^15.0.0",
+    "eslint-config-standard": "^16.0.1",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
