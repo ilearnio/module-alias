@@ -29,6 +29,21 @@ import module from 'my_private_module'
 
 **WARNING:** If you are going to use this package within another NPM package, please read [Using within another NPM package](#using-within-another-npm-package) first to be aware of potential caveats.
 
+## IMPORTANT - Node v14.6.0+
+
+**WARNING:** If you are using Node v14.6.0 or above, you do not need this
+package. A feature was added in Node v14.6.0 called import mapping - you can
+find more at the [documentation]. This enables you to map from both import paths
+AND dependencies, for both `require` and ESM `import` statements, without
+potentially breaking the module resolution order for other packages in a project
+(which makes it fully suitable for libraries and a better alternative to this
+package).
+
+We will not be deprecating this package so people can still use it for older
+versions of Node.
+
+[documentation]: https://nodejs.org/api/packages.html#packages_imports
+
 ## Install
 
 ```
@@ -169,6 +184,8 @@ You can use `module-alias` within another NPM package, however there are a few t
 
 Here is an [example project](https://github.com/Kehrlann/module-alias-library).
 
+See [the aforementioned section](#important---node-v1460) for more information
+and if you wish to avoid this behaviour (Node 14.6.0+ only).
 
 ## Known incompatibilities
 
