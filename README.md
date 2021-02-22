@@ -33,16 +33,20 @@ import module from 'my_private_module'
 
 **WARNING:** If you are using Node v14.6.0 or above, you do not need this
 package. A feature was added in Node v14.6.0 called import mapping - you can
-find more at the [documentation]. This enables you to map from both import paths
-AND dependencies, for both `require` and ESM `import` statements, without
-potentially breaking the module resolution order for other packages in a project
-(which makes it fully suitable for libraries and a better alternative to this
-package).
+find more at the official [documentation] site. This enables you to map from
+both import paths AND dependencies, for both `require` and ESM `import`
+statements, without potentially breaking the module resolution order for other
+packages in a project (which makes it fully suitable for libraries and a better
+alternative to this package).
+
+For further explanation on how to use this to replace `module-alias`, there
+are [more examples] in the documentation specifically focused on path imports.
 
 We will not be deprecating this package so people can still use it for older
 versions of Node.
 
 [documentation]: https://nodejs.org/api/packages.html#packages_imports
+[more examples]: https://nodejs.org/api/packages.html#packages_subpath_imports
 
 ## Install
 
