@@ -213,7 +213,8 @@ function init (options) {
 }
 
 function getMainModule () {
-  return require.main._simulateRepl ? undefined : require.main
+  var main = require.main
+  return main && main._simulateRepl ? undefined : main
 }
 
 module.exports = init
