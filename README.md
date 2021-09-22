@@ -18,6 +18,7 @@ var module = require('@deep/module')
 // Or ES6
 import module from '@deep/module'
 ```
+**WARNING:** This package does not support *native* ES modules. Please refer to [Known incompatibilities](#known-incompatibilities) for details.
 
 It also allows you to register directories that will act just like `node_modules` but with your own private modules, so that you can access them directly:
 
@@ -174,6 +175,7 @@ Here is an [example project](https://github.com/Kehrlann/module-alias-library).
 
 This module does not play well with:
 
+- Native ES modules. Module-alias works by patching Node's internal module resolution mechanism, but native ES modules (unlike CJS) use a completely separate system. However, custom hooks for that system are for the time being locked behind the `--experimental-loader` execution flag. See [59](https://github.com/ilearnio/module-alias/issues/59) for details.
 - Front-end JavaScript code. Module-alias is designed for server side so do not expect it to work with front-end frameworks (React, Vue, ...) as they tend to use Webpack. Use Webpack's [resolve.alias](https://webpack.js.org/configuration/resolve/#resolvealias) mechanism instead.
 - [Jest](https://jestjs.io), which discards node's module system entirely to use it's own module system, bypassing module-alias.
 - The [NCC compiler](https://github.com/zeit/ncc), as it uses WebPack under the hood without exposing properties, such as resolve.alias. It is not [something they wish to do](https://github.com/zeit/ncc/pull/460).
