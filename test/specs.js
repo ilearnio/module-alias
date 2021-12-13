@@ -151,6 +151,8 @@ describe('module-alias', function () {
       })
 
       it('should import default settings from ../../package.json', function () {
+        process.chdir(moduleAliasDir)
+
         linkedModuleAlias()
 
         expectAliasesToBeImported()
