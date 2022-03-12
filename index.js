@@ -1,113 +1,107 @@
-'use strict'
-
-var BuiltinModule = require('module')
+"use strict"
+let BuiltinModule = require("module");
+let nodePath = require("path");
 
 // Guard against poorly mocked module constructors
-var Module = module.constructor.length > 1
-  ? module.constructor
-  : BuiltinModule
+let Module = module.letructor.length > 1 ? module.letructor : BuiltinModule;
 
-var nodePath = require('path')
+let modulePaths = [];
+let moduleAliases = {};
+let moduleAliasNames = [];
 
-var modulePaths = []
-var moduleAliases = {}
-var moduleAliasNames = []
+let oldNodeModulePaths = Module._nodeModulePaths;
 
-var oldNodeModulePaths = Module._nodeModulePaths
-Module._nodeModulePaths = function (from) {
-  var paths = oldNodeModulePaths.call(this, from)
-
-  // Only include the module path for top-level modules
-  // that were not installed:
-  if (from.indexOf('node_modules') === -1) {
-    paths = modulePaths.concat(paths)
-  }
-
-  return paths
+Module._nodeModulePaths = (from) => {
+    let paths = oldNodeModulePaths.call(this, from)
+        // Only include the module path for top-level modules
+        // that were not installed:
+    if (from.indexOf("node_modules") === -1) {
+        paths = modulePaths.concat(paths)
+    }
+    return paths;
 }
 
-var oldResolveFilename = Module._resolveFilename
-Module._resolveFilename = function (request, parentModule, isMain, options) {
-  for (var i = moduleAliasNames.length; i-- > 0;) {
-    var alias = moduleAliasNames[i]
-    if (isPathMatchesAlias(request, alias)) {
-      var aliasTarget = moduleAliases[alias]
-      // Custom function handler
-      if (typeof moduleAliases[alias] === 'function') {
-        var fromPath = parentModule.filename
-        aliasTarget = moduleAliases[alias](fromPath, request, alias)
-        if (!aliasTarget || typeof aliasTarget !== 'string') {
-          throw new Error('[module-alias] Expecting custom handler function to return path.')
+let oldResolveFilename = Module._resolveFilename;
+Module._resolveFilename = (request, parentModule, isMain, options) => {
+    for (let i = moduleAliasNames.length; i-- > 0;) {
+        let alias = moduleAliasNames[i]
+        if (isPathMatchesAlias(request, alias)) {
+            let aliasTarget = moduleAliases[alias]
+                // Custom function handler
+            if (typeof moduleAliases[alias] === "function") {
+                let fromPath = parentModule.filename
+                aliasTarget = moduleAliases[alias](fromPath, request, alias)
+                if (!aliasTarget || typeof aliasTarget !== "string") {
+                    throw new Error("[module-alias] Expecting custom handler function to return path.")
+                }
+            }
+            request = nodePath.join(aliasTarget, request.substr(alias.length));
+            // Only use the first match
+            break
         }
-      }
-      request = nodePath.join(aliasTarget, request.substr(alias.length))
-      // Only use the first match
-      break
     }
-  }
 
-  return oldResolveFilename.call(this, request, parentModule, isMain, options)
+    return oldResolveFilename.call(this, request, parentModule, isMain, options)
 }
 
-function isPathMatchesAlias (path, alias) {
-  // Matching /^alias(\/|$)/
-  if (path.indexOf(alias) === 0) {
-    if (path.length === alias.length) return true
-    if (path[alias.length] === '/') return true
-  }
-
-  return false
-}
-
-function addPathHelper (path, targetArray) {
-  path = nodePath.normalize(path)
-  if (targetArray && targetArray.indexOf(path) === -1) {
-    targetArray.unshift(path)
-  }
-}
-
-function removePathHelper (path, targetArray) {
-  if (targetArray) {
-    var index = targetArray.indexOf(path)
-    if (index !== -1) {
-      targetArray.splice(index, 1)
+let isPathMatchesAlias = (path, alias) => {
+    // Matching /^alias(\/|$)/
+    if (path.indexOf(alias) === 0) {
+        if (path.length === alias.length) return true
+        if (path[alias.length] === "/") return true
     }
-  }
+    return false;
 }
 
-function addPath (path) {
-  var parent
-  path = nodePath.normalize(path)
-
-  if (modulePaths.indexOf(path) === -1) {
-    modulePaths.push(path)
-    // Enable the search path for the current top-level module
-    var mainModule = getMainModule()
-    if (mainModule) {
-      addPathHelper(path, mainModule.paths)
+let addPathHelper = (path, targetArray) => {
+    path = nodePath.normalize(path)
+    if (targetArray && targetArray.indexOf(path) === -1) {
+        targetArray.unshift(path)
     }
-    parent = module.parent
+}
 
-    // Also modify the paths of the module that was used to load the
-    // app-module-paths module and all of it's parents
-    while (parent && parent !== mainModule) {
-      addPathHelper(path, parent.paths)
-      parent = parent.parent
+let removePathHelper = (path, targetArray) => {
+    if (targetArray) {
+        let index = targetArray.indexOf(path)
+        if (index !== -1) {
+            targetArray.splice(index, 1)
+        }
     }
-  }
 }
 
-function addAliases (aliases) {
-  for (var alias in aliases) {
-    addAlias(alias, aliases[alias])
-  }
+let addPath = (path) => {
+    let parent
+    path = nodePath.normalize(path)
+
+    if (modulePaths.indexOf(path) === -1) {
+        modulePaths.push(path)
+            // Enable the search path for the current top-level module
+        let mainModule = getMainModule()
+        if (mainModule) {
+            addPathHelper(path, mainModule.paths)
+        }
+        parent = module.parent;
+
+        // Also modify the paths of the module that was used to load the
+        // App-module-paths module and all of it's parents
+        while (parent && parent !== mainModule) {
+            addPathHelper(path, parent.paths)
+            parent = parent.parent
+        }
+    }
 }
 
-function addAlias (alias, target) {
-  moduleAliases[alias] = target
-  // Cost of sorting is lower here than during resolution
-  moduleAliasNames = Object.keys(moduleAliases)
-  moduleAliasNames.sort()
+let addAliases = (aliases) => {
+    for (let alias in aliases) {
+        addAlias(alias, aliases[alias])
+    }
+}
+
+let addAlias = (alias, target) => {
+    moduleAliases[alias] = target
+        // Cost of sorting is lower here than during resolution
+    moduleAliasNames = Object.keys(moduleAliases)
+    moduleAliasNames.sort()
 }
 
 /**
@@ -115,110 +109,109 @@ function addAlias (alias, target) {
  * and custom module directories)
  * The function is undocumented and for testing purposes only
  */
-function reset () {
-  var mainModule = getMainModule()
 
-  // Reset all changes in paths caused by addPath function
-  modulePaths.forEach(function (path) {
-    if (mainModule) {
-      removePathHelper(path, mainModule.paths)
-    }
+let reset = () => {
+    let mainModule = getMainModule()
 
-    // Delete from require.cache if the module has been required before.
-    // This is required for node >= 11
-    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
-      if (name.indexOf(path) !== -1) {
-        delete require.cache[name]
-      }
+    // Reset all changes in paths caused by addPath function
+    modulePaths.forEach(function(path) {
+        if (mainModule) {
+            removePathHelper(path, mainModule.paths)
+        }
+
+        // Delete from require.cache if the module has been required before.
+        // This is required for node >= 11
+
+        Object.getOwnPropertyNames(require.cache).forEach(function(name) {
+            if (name.indexOf(path) !== -1) {
+                delete require.cache[name]
+            }
+        })
+
+        let parent = module.parent
+        while (parent && parent !== mainModule) {
+            removePathHelper(path, parent.paths)
+            parent = parent.parent
+        }
     })
-
-    var parent = module.parent
-    while (parent && parent !== mainModule) {
-      removePathHelper(path, parent.paths)
-      parent = parent.parent
-    }
-  })
-
-  modulePaths = []
-  moduleAliases = {}
-  moduleAliasNames = []
+    modulePaths = [];
+    moduleAliases = {};
+    moduleAliasNames = [];
 }
 
 /**
  * Import aliases from package.json
  * @param {object} options
  */
-function init (options) {
-  if (typeof options === 'string') {
-    options = { base: options }
-  }
-
-  options = options || {}
-
-  var candidatePackagePaths
-  if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
-  } else {
-    // There is probably 99% chance that the project root directory in located
-    // above the node_modules directory,
-    // Or that package.json is in the node process' current working directory (when
-    // running a package manager script, e.g. `yarn start` / `npm run start`)
-    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
-  }
-
-  var npmPackage
-  var base
-  for (var i in candidatePackagePaths) {
-    try {
-      base = candidatePackagePaths[i]
-
-      npmPackage = require(nodePath.join(base, 'package.json'))
-      break
-    } catch (e) {
-      // noop
+let init = (options) => {
+    if (typeof options === "string") {
+        options = { base: options }
     }
-  }
 
-  if (typeof npmPackage !== 'object') {
-    var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
-  }
+    options = options || {};
 
-  //
-  // Import aliases
-  //
-
-  var aliases = npmPackage._moduleAliases || {}
-
-  for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
+    let candidatePackagePaths;
+    if (options.base) {
+        candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ""))]
+    } else {
+        // There is probably 99% chance that the project root directory in located
+        // above the node_modules directory,
+        // Or that package.json is in the node process' current working directory (when
+        // running a package manager script, e.g. `yarn start` / `npm run start`)
+        candidatePackagePaths = [nodePath.join(__dirname, "../.."), process.cwd()]
     }
-  }
 
-  addAliases(aliases)
+    let npmPackage;
+    let base;
+    for (let i in candidatePackagePaths) {
+        try {
+            base = candidatePackagePaths[i]
 
-  //
-  // Register custom module directories (like node_modules)
-  //
+            npmPackage = require(nodePath.join(base, "package.json"))
+            break
+        } catch (e) {}
+    }
 
-  if (npmPackage._moduleDirectories instanceof Array) {
-    npmPackage._moduleDirectories.forEach(function (dir) {
-      if (dir === 'node_modules') return
+    if (typeof npmPackage !== "object") {
+        let pathString = candidatePackagePaths.join(",\n")
+        throw new Error("Unable to find package.json in any of:\n[" + pathString + "]")
+    }
 
-      var modulePath = nodePath.join(base, dir)
-      addPath(modulePath)
-    })
-  }
+    //
+    // Import aliases
+    //
+
+    let aliases = npmPackage._moduleAliases || {}
+
+    for (let alias in aliases) {
+        if (aliases[alias][0] !== "/") {
+            aliases[alias] = nodePath.join(base, aliases[alias])
+        }
+    }
+
+    addAliases(aliases);
+
+    //
+    // Register custom module directories (like node_modules)
+    //
+
+    if (npmPackage._moduleDirectories instanceof Array) {
+        npmPackage._moduleDirectories.forEach(function(dir) {
+            if (dir === "node_modules") return
+
+            let modulePath = nodePath.join(base, dir)
+            addPath(modulePath)
+        })
+    }
 }
 
-function getMainModule () {
-  return require.main._simulateRepl ? undefined : require.main
+let getMainModule = () => {
+    return require.main._simulateRepl ? undefined : require.main;
 }
 
-module.exports = init
-module.exports.addPath = addPath
-module.exports.addAlias = addAlias
-module.exports.addAliases = addAliases
-module.exports.isPathMatchesAlias = isPathMatchesAlias
-module.exports.reset = reset
+module.exports = init;
+module.exports.addPath = addPath;
+module.exports.addAlias = addAlias;
+module.exports.addAliases = addAliases;
+module.exports.isPathMatchesAlias = isPathMatchesAlias;
+module.exports.reset = reset;
