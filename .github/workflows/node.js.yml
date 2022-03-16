@@ -8,6 +8,7 @@ on:
     branches: [ github-actions-tests ]
   pull_request:
     branches: [ github-actions-tests ]
+  workflow_dispatch:
 
 jobs:
   build:
