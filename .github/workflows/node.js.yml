@@ -29,5 +29,6 @@ jobs:
         # cache: 'npm'
     - run: node -v
     - run: npm -v
-    - run: NODE_ENV=test npx mocha test/specs.js 
+    - run: npm ci
+    - run: npm run testonly
 
