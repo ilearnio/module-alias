@@ -27,12 +27,16 @@ jobs:
         echo '::set-output name=NVM_DIR::'$NVM_DIR
       id: nvm-setup
     - run: |
+        nvm use 5
         node -v
         npm -v
         echo $NVM_DIR
       env: 
         NVM_DIR: ${{ steps.nvm-setup.outputs.NVM_DIR }}
-    - run: npm run testonly
+    - run: |
+        nvm use 5
+        npm install
+        npm run testonly
       env: 
         NVM_DIR: ${{ steps.nvm-setup.outputs.NVM_DIR }}
 
