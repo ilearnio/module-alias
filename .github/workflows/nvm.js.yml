@@ -27,6 +27,9 @@ jobs:
         echo '::set-output name=NVM_DIR::'$NVM_DIR
         node -v
         npm -v
+        nvm install-latest-npm
+        node -v
+        npm -v
         npm install
         npm run testonly
       id: nvm-setup
