@@ -15,6 +15,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [0.10.0, 5, 8, 9, 10, 11, 12, 14, 16]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v2
@@ -23,13 +27,18 @@ jobs:
         export NVM_DIR="$HOME/.nvm" 
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-        nvm install 5 && nvm use 5
+        nvm install $NODE_VERSION && nvm use $NODE_VERSION
         echo '::set-output name=NVM_DIR::'$NVM_DIR
         node -v
         npm -v
-        nvm install-latest-npm
-        node -v
-        npm -v
+        if [[ "$NODE_VERSION" -lt 6 ]]; then
+            echo "Update npm to latest known version for node versions less than 6"
+            nvm install-latest-npm
+            node -v
+            npm -v
+        fi
         npm install
         npm run testonly
       id: nvm-setup
+      env:
+        NODE_VERSION: ${{ matrix.node-version }}
