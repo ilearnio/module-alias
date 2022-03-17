@@ -23,7 +23,7 @@ jobs:
         export NVM_DIR="$HOME/.nvm" 
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    - run: nvm install 5 && nvm use 5
+        nvm install 5 && nvm use 5
     - run: node -v
     - run: npm -v
     - run: npm run testonly
