@@ -24,7 +24,15 @@ jobs:
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
         nvm install 5 && nvm use 5
-    - run: node -v
-    - run: npm -v
+        echo '::set-output name=NVM_DIR::$NVM_DIR'
+      id: nvm-setup
+    - run: |
+        node -v
+        npm -v
+        echo $NVM_DIR
+      env: 
+        NVM_DIR: ${{ steps.nvm-setup.outputs.NVM_DIR }}
     - run: npm run testonly
+      env: 
+        NVM_DIR: ${{ steps.nvm-setup.outputs.NVM_DIR }}
 
