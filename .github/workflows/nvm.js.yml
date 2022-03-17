@@ -37,6 +37,9 @@ jobs:
         if [[ "$NODE_MAJOR_VERSION" -lt 6 ]]; then
             echo "Update npm to latest known version for node versions less than 6"
             nvm install-latest-npm
+            if [[ "$NODE_MAJOR_VERSION" -eq 0 ]]; then
+                nvm install-latest-npm
+            fi
             node -v
             npm -v
         fi
