@@ -18,6 +18,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - run: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
     - run: nvm install 5 && nvm use 5
     - run: node -v
     - run: npm -v
