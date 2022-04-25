@@ -1,0 +1,9 @@
+{
+  "_moduleAliases": {
+    "@src": "../",
+    "@foo": "../foo/index.js",
+    "@bar": "../bar",
+    "some/foo": "../foo"
+  },
+  "_moduleDirectories": ["../node_modules_custom"]
+}

@@ -84,7 +84,7 @@ describe('module-alias', function () {
     expect(something).to.equal('Hello from foo')
   })
 
-  describe('importing settings from package.json', function () {
+  describe('importing settings', function () {
     function expectAliasesToBeImported () {
       var src, foo, baz, some, someModule
       try {
@@ -102,7 +102,7 @@ describe('module-alias', function () {
       expect(someModule).to.equal('Hello from some-module')
     }
 
-    it('should import settings from user-defined base path', function () {
+    it('should import settings from package.json with user-defined base path', function () {
       moduleAlias({
         base: path.join(__dirname, 'src')
       })
@@ -120,9 +120,59 @@ describe('module-alias', function () {
         process.chdir(baseWorkingDirectory)
       })
 
-      it('should import default settings from process.cwd()/package.json', function () {
+      it('should import default settings from module-alias.config.js', function () {
+        process.chdir(path.join(__dirname, 'src', 'default_module_alias'))
+        moduleAlias()
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import default settings from package.json', function () {
         process.chdir(path.join(__dirname, 'src'))
         moduleAlias()
+
+        expectAliasesToBeImported()
+      })
+    })
+
+    context('when base path is provided', function () {
+      afterEach(function () {
+        // Deleting config.js from require cache since we have to re-require it for next test.
+        delete require.cache[path.join(__dirname, 'src', 'default_module_alias', 'config.js')]
+      })
+
+      it('should import settings from module-alias.config.js by default', function () {
+        moduleAlias(path.join(__dirname, 'src', 'default_module_alias'))
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import settings from module-alias.config.js', function () {
+        moduleAlias(path.join(__dirname, 'src', 'default_module_alias', 'module-alias.config.js'))
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import settings from any config file using absolute path', function () {
+        moduleAlias(path.join(__dirname, 'src', 'default_module_alias', 'config.js'))
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import settings from any config file using relative path', function () {
+        moduleAlias('./test/src/default_module_alias/config.js')
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import settings from any package.json file', function () {
+        moduleAlias(path.join(__dirname, 'src', 'package.json'))
+
+        expectAliasesToBeImported()
+      })
+
+      it('should import settings from legacy package.json file', function () {
+        moduleAlias(path.join(__dirname, 'src', 'legacy_package_json', 'package.json'))
 
         expectAliasesToBeImported()
       })
@@ -181,7 +231,9 @@ describe('module-alias', function () {
   })
 
   it('should handle mocha test', function (done) {
-    exec('mocha ' + path.join(__dirname, '/src/mocha/test.js'), function (_, result) {
+    var mochaPath = path.join(__dirname, '..', 'node_modules', '.bin', 'mocha')
+    var testFilePath = path.join(__dirname, 'src', 'mocha', 'test.js')
+    exec(mochaPath + ' ' + testFilePath, function (_, result) {
       expect(result.toString('utf8')).to.match(/1 passing/)
       done()
     })

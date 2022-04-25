@@ -144,72 +144,120 @@ function reset () {
   moduleAliasNames = []
 }
 
+//
+// Functions to load configurations from a file
+//
+
+// Load configuration from any file
+function readConfigFile (path) {
+  try {
+    var config = require(path)
+
+    if (nodePath.basename(path) === 'package.json') {
+      // Support for legacy package.json config definitions
+      if (config._moduleAliases || config._moduleDirectories) {
+        config = {
+          aliases: config._moduleAliases,
+          moduleDirectories: config._moduleDirectories
+        }
+      }
+
+      if (config && config['module-alias']) {
+        config = config['module-alias']
+      }
+    } else if (config && config.default) { // ES module default export
+      config = config.default
+    }
+
+    if (config) {
+      config.aliases = config.aliases || {}
+      config.moduleDirectories = config.moduleDirectories || []
+    }
+
+    // Support ES6 export default
+    return config
+  } catch (e) {
+    // Do nothing
+  }
+}
+
+function loadConfig (base) {
+  var candidateProjectPaths
+  if (base) {
+    candidateProjectPaths = [nodePath.resolve(base)]
+  } else {
+    // There is probably 99% chance that the project root directory in located above the
+    // node_modules directory, or that package.json is in the node process' current working
+    // directory (when running a package manager script, e.g. `yarn start` / `npm run start`)
+    candidateProjectPaths = [nodePath.join(__dirname, '../..'), process.cwd()]
+  }
+
+  var config
+  var projectPath
+  for (var i in candidateProjectPaths) {
+    projectPath = candidateProjectPaths[i]
+    var filename = nodePath.basename(projectPath)
+
+    if (/.\.(m?js|json)$/.test(filename)) { // check supported config file extensions
+      // Try custom config path
+      config = readConfigFile(projectPath)
+      projectPath = nodePath.dirname(projectPath)
+    } else {
+      // Try module-alias.config.js
+      config = readConfigFile(nodePath.join(projectPath, 'module-alias.config.js'))
+
+      // Try package.json
+      if (!config) {
+        config = readConfigFile(nodePath.join(projectPath, 'package.json'))
+      }
+    }
+    if (config) break
+  }
+
+  return {
+    projectPath: projectPath,
+    config: config
+  }
+}
+
 /**
- * Import aliases from package.json
+ * Initialize aliases from a config file
  * @param {object} options
  */
 function init (options) {
-  if (typeof options === 'string') {
-    options = { base: options }
-  }
-
   options = options || {}
 
-  var candidatePackagePaths
-  if (options.base) {
-    candidatePackagePaths = [nodePath.resolve(options.base.replace(/\/package\.json$/, ''))]
-  } else {
-    // There is probably 99% chance that the project root directory in located
-    // above the node_modules directory,
-    // Or that package.json is in the node process' current working directory (when
-    // running a package manager script, e.g. `yarn start` / `npm run start`)
-    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
-  }
+  var base = typeof options === 'string' ? options : options.base
 
-  var npmPackage
-  var base
-  for (var i in candidatePackagePaths) {
-    try {
-      base = candidatePackagePaths[i]
+  var loadedConfigData = loadConfig(base)
+  var projectPath = loadedConfigData.projectPath
+  var config = loadedConfigData.config
 
-      npmPackage = require(nodePath.join(base, 'package.json'))
-      break
-    } catch (e) {
-      // noop
-    }
-  }
-
-  if (typeof npmPackage !== 'object') {
-    var pathString = candidatePackagePaths.join(',\n')
-    throw new Error('Unable to find package.json in any of:\n[' + pathString + ']')
+  if (typeof config !== 'object') {
+    throw new Error('[module-alias] Unable to find configuration file')
   }
 
   //
-  // Import aliases
+  // Register aliases
   //
 
-  var aliases = npmPackage._moduleAliases || {}
-
-  for (var alias in aliases) {
-    if (aliases[alias][0] !== '/') {
-      aliases[alias] = nodePath.join(base, aliases[alias])
+  var aliases = {}
+  for (var alias in config.aliases) {
+    if (config.aliases[alias][0] !== '/') {
+      aliases[alias] = nodePath.join(projectPath, config.aliases[alias])
     }
   }
-
   addAliases(aliases)
 
   //
   // Register custom module directories (like node_modules)
   //
 
-  if (npmPackage._moduleDirectories instanceof Array) {
-    npmPackage._moduleDirectories.forEach(function (dir) {
-      if (dir === 'node_modules') return
-
-      var modulePath = nodePath.join(base, dir)
-      addPath(modulePath)
-    })
-  }
+  config.moduleDirectories.forEach(function (dir) {
+    if (dir === 'node_modules') return
+    var modulePath = nodePath.join(projectPath, dir)
+    addPath(modulePath)
+  })
 }
 
 function getMainModule () {
