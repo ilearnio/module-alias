@@ -5,7 +5,7 @@ orbs:
 jobs:
   lint_and_test:
     docker:
-      - image: cimg/node:12.4.0
+      - image: cimg/node:14.20.1
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
           include_job_number_field: false
   publish:
     docker:
-      - image: cimg/node:12.4.0
+      - image: cimg/node:14.20.1
     steps:
       - checkout
       - run:
