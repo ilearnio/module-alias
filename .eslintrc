@@ -4,7 +4,6 @@
     "node": true,
     "es2020": true
   },
-  "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module"
   }

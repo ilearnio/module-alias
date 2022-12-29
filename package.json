@@ -2,6 +2,9 @@
   "name": "@ministryofjustice/module-alias",
   "description": "Module aliases (based on work by Nick Gavrilov artnikpro@gmail.com)",
   "version": "1.0.23",
+  "engines": {
+    "node": ">=14.20.1 <15.0.0"
+  },
   "author": "Form Builder Team <form-builder-team@digital.justice.gov.uk>",
   "contributors": [
     {
@@ -16,7 +19,8 @@
   "scripts": {
     "test": "NODE_ENV=test mocha test/*.spec.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky install"
   },
   "bugs": {
     "url": "https://github.com/@ministryofjustice/module-alias/issues"
@@ -36,21 +40,14 @@
     "url": "https://github.com/@ministryofjustice/module-alias.git"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
-    "chai": "^4.2.0",
-    "eslint": "^7.28.0",
-    "eslint-config-standard": "^16.0.1",
-    "eslint-plugin-import": "^2.20.1",
-    "eslint-plugin-node": "^11.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^5.0.0",
-    "husky": "^4.2.3",
-    "mocha": "^9.2.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint && npm run test"
-    }
+    "chai": "^4.3.7",
+    "eslint": "^8.30.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "husky": "^8.0.0"
   },
   "_moduleDirectories": [
     "test/src/node_modules_custom"
