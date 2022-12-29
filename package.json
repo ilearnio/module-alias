@@ -39,13 +39,13 @@
     "url": "https://github.com/@ministryofjustice/module-alias.git"
   },
   "devDependencies": {
-    "chai": "^4.3.6",
-    "eslint": "^8.26.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.30.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.1.0"
+    "mocha": "^10.2.0"
   },
   "husky": {
     "hooks": {
