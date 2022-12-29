@@ -19,7 +19,8 @@
   "scripts": {
     "test": "NODE_ENV=test mocha test/*.spec.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky install"
   },
   "bugs": {
     "url": "https://github.com/@ministryofjustice/module-alias/issues"
@@ -45,12 +46,8 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.2.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint && npm run test"
-    }
+    "mocha": "^10.2.0",
+    "husky": "^8.0.0"
   },
   "_moduleDirectories": [
     "test/src/node_modules_custom"
