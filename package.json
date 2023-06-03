@@ -1,7 +1,7 @@
 {
   "name": "module-alias",
   "description": "Create aliases of directories and register custom module paths",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "author": {
     "name": "Nick Gavrilov",
     "email": "artnikpro@gmail.com"
