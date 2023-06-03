@@ -1,6 +1,13 @@
 # module-alias
 [![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
+
+If everyone who reads this would donate just $1, I would be a millionaire in 1 week! 🙃 Thank you for reaching 1M+ weekly downloads!
+
+More donations means more motivation for me to make updates. Thank you so much!
+
+[DONATE $1 ❤️](https://tinyurl.com/donate-module-alias)
+
+---
 
 Create aliases of directories and register custom module paths in NodeJS like a boss!
 
@@ -184,11 +191,23 @@ In order to register an alias it modifies the internal `Module._resolveFilename`
 
 In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
 
+## Refactor your code (for already existing projects)
+
+If you are using this on an existing project, you can use [relative-to-alias](https://github.com/s-yadav/relative-to-alias) to refactor your code to start using aliases.
+
+## Donate
+
+If everyone who downloads module-alias would donate just $1, I would be a millionaire in 1 week!
+
+I love contributing to open source, for free, but you know, sometimes, in the middle of the night, I may wan to eat.
+
+There are some improvements planned for module-alias and your donations will help a lot to make it happen faster.
+
+[DONATE $1 ❤️](https://tinyurl.com/donate-module-alias) and thank you so much!
+
+
 [npm-image]: https://img.shields.io/npm/v/module-alias.svg
 [npm-url]: https://npmjs.org/package/module-alias
 [travis-image]: https://img.shields.io/travis/ilearnio/module-alias/master.svg
 [travis-url]: https://travis-ci.org/ilearnio/module-alias
 
-## Refactor your code (for already existing projects)
-
-If you are using this on an existing project, you can use [relative-to-alias](https://github.com/s-yadav/relative-to-alias) to refactor your code to start using aliases.
