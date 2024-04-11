@@ -172,7 +172,7 @@ More details on the [official documentation](https://jestjs.io/docs/en/configura
 You can use `module-alias` within another NPM package, however there are a few things to take into consideration.
 
 1. As the aliases are global, you should make sure your aliases are unique, to avoid conflicts with end-user code, or with other libraries using module-alias. For example, you could prefix your aliases with '@my-lib/', and then use require('@my-lib/deep').
-2. The internal "register" mechanism may not work, you should not rely on `require('module-alias/register')` for automatic detection of `package.json` location (where you defined your aliases), as it tries to find package.json in either the current working directory of your node process, or two levels down from node_modules/module-alias. It is extremely likely that this is end-user code. So, instead, your should either register aliases manually with `moduleAlias.addAlias`, or using something like `require('module-alias')(__dirname)`.
+2. The internal "register" mechanism may not work, you should not rely on `require('module-alias/register')` for automatic detection of `package.json` location (where you defined your aliases), as it tries to find package.json in either the current working directory of your node process, or two levels down from node_modules/module-alias. It is extremely likely that this is end-user code. So, instead, you should either register aliases manually with `moduleAlias.addAlias`, or using something like `require('module-alias')(__dirname)`.
 
 Here is an [example project](https://github.com/Kehrlann/module-alias-library).
 
@@ -199,7 +199,7 @@ If you are using this on an existing project, you can use [relative-to-alias](ht
 
 If everyone who downloads module-alias would donate just $1, I would be a millionaire in 1 week!
 
-I love contributing to open source, for free, but you know, sometimes, in the middle of the night, I may wan to eat.
+I love contributing to open source, for free, but you know, sometimes, in the middle of the night, I may want to eat.
 
 There are some improvements planned for module-alias and your donations will help a lot to make it happen faster.
 
