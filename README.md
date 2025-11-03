@@ -179,7 +179,8 @@ Unfortunately, `module-alias` itself would not work from Jest due to a custom be
 "jest": {
   "moduleNameMapper": {
     "@root/(.*)": "<rootDir>/$1",
-    "@client/(.*)": "<rootDir>/src/client/$1"
+    "@client/(.*)": "<rootDir>/src/client/$1",
+    "@server": "<rootDir>/server.js" // Pointing jest to a single file not a directory.
   },
 }
 ```
