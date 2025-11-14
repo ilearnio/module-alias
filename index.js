@@ -163,7 +163,7 @@ function init (options) {
     // above the node_modules directory,
     // Or that package.json is in the node process' current working directory (when
     // running a package manager script, e.g. `yarn start` / `npm run start`)
-    candidatePackagePaths = [nodePath.join(__dirname, '../..'), process.cwd()]
+    candidatePackagePaths = [process.cwd(), nodePath.join(__dirname, '../..')]
   }
 
   var npmPackage
