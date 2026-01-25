@@ -1,0 +1,7 @@
+{
+  "name": "esm-basic-test",
+  "type": "module",
+  "_moduleAliases": {
+    "@lib": "src/lib"
+  }
+}

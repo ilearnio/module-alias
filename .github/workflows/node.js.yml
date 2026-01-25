@@ -11,20 +11,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-
+  test-legacy:
+    # CJS-only tests for older Node versions
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         node-version: [6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 17.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - run: node -v
@@ -32,3 +31,22 @@ jobs:
     - run: npm install
     - run: npm run testonly
 
+  test-esm:
+    # CJS + ESM tests for Node 18+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: node -v
+    - run: npm -v
+    - run: npm install
+    - run: npm run test:all

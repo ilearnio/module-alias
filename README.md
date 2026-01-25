@@ -44,6 +44,8 @@ npm i --save module-alias
 
 ## Usage
 
+### CommonJS (require)
+
 Add your custom configuration to your `package.json` (in your application's root)
 
 ```js
@@ -79,6 +81,45 @@ import module from '@root/some-module'
 import veryDeepModule from '@deep/my-module'
 import customModule from 'my_private_module' // module from `node_modules_custom` directory
 ```
+
+### ES Modules (import) - Node 18+
+
+For native ES modules, use the `--import` flag:
+
+```bash
+node --import module-alias/register ./app.mjs
+```
+
+Your `package.json` configuration works the same way:
+
+```json
+{
+  "_moduleAliases": {
+    "@lib": "src/lib",
+    "@utils": "src/utils"
+  }
+}
+```
+
+Then in your ES module:
+
+```js
+import { something } from '@lib/something.js'
+```
+
+**Node Version Support:**
+
+| Node Version | API Used |
+|--------------|----------|
+| 22.15+ | `module.registerHooks()` (sync, recommended) |
+| 18.19 - 22.14 | `module.register()` (async) |
+| < 18.19 | Not supported for ESM |
+
+**ESM Limitations:**
+
+- Requires `--import` flag - cannot be imported at runtime like CJS
+- Programmatic `addAlias()` not available before app starts
+- Function-based resolvers must be configured via the loader API
 
 ## Advanced usage
 
