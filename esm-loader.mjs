@@ -122,6 +122,10 @@ export function addAliases (aliasMap) {
   }
 }
 
+export function addPath (path) {
+  moduleDirectories.push(path)
+}
+
 export function reset () {
   aliases = {}
   moduleDirectories = []

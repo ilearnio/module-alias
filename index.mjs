@@ -2,7 +2,7 @@
 // Provides programmatic API with auto-registered hooks
 
 import { registerHooks } from 'node:module'
-import { addAlias as _addAlias, addAliases as _addAliases, resolveAlias } from './esm-loader.mjs'
+import { addAlias as _addAlias, addAliases as _addAliases, addPath as _addPath, reset as _reset, resolveAlias } from './esm-loader.mjs'
 
 let hooksRegistered = false
 
@@ -38,4 +38,14 @@ export function addAlias(alias, target) {
 export function addAliases(aliases) {
   ensureHooks()
   _addAliases(aliases)
+}
+
+export function addPath(path) {
+  ensureHooks()
+  _addPath(path)
+}
+
+export function reset() {
+  _reset()
+  hooksRegistered = false
 }

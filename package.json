@@ -27,8 +27,10 @@
   ],
   "license": "MIT",
   "main": "index.js",
+  "types": "index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "require": "./index.js",
       "import": "./index.mjs"
     },
@@ -40,6 +42,7 @@
   "files": [
     "index.js",
     "index.mjs",
+    "index.d.ts",
     "register.js",
     "register.mjs",
     "esm-loader.mjs",
