@@ -1,0 +1,5 @@
+{
+  "name": "esm-module-dirs-test",
+  "type": "module",
+  "_moduleDirectories": ["custom_modules"]
+}

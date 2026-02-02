@@ -10,6 +10,8 @@
     "test": "npm run lint && npm run testonly",
     "testonly": "NODE_ENV=test mocha test/specs.js",
     "testonly-watch": "NODE_ENV=test mocha -w test/specs.js",
+    "test:esm": "NODE_ENV=test mocha test/esm/unit.mjs test/esm/integration.js",
+    "test:all": "npm run testonly && npm run test:esm",
     "lint": "standard"
   },
   "bugs": {
@@ -25,9 +27,21 @@
   ],
   "license": "MIT",
   "main": "index.js",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./index.js"
+    },
+    "./register": {
+      "require": "./register.js",
+      "import": "./register.mjs"
+    }
+  },
   "files": [
     "index.js",
     "register.js",
+    "register.mjs",
+    "esm-loader.mjs",
     "README.md",
     "LICENSE"
   ],
