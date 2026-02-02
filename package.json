@@ -30,7 +30,7 @@
   "exports": {
     ".": {
       "require": "./index.js",
-      "import": "./index.js"
+      "import": "./index.mjs"
     },
     "./register": {
       "require": "./register.js",
@@ -39,6 +39,7 @@
   },
   "files": [
     "index.js",
+    "index.mjs",
     "register.js",
     "register.mjs",
     "esm-loader.mjs",

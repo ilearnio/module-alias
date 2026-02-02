@@ -1,37 +1,35 @@
 # module-alias
+
 [![NPM Version][npm-image]][npm-url]
 
-If everyone who reads this would donate just $1, I would be a millionaire in 1 week! 🙃 Thank you for reaching 1M+ weekly downloads!
-
-More donations means more motivation for me to make updates. Thank you so much!
-
-[DONATE $1 ❤️](https://tinyurl.com/donate-module-alias)
+Donations are much appreciated and would help me continue working on this package! [Donate here ❤️](https://tinyurl.com/donate-module-alias).
 
 ---
 
 Create aliases of directories and register custom module paths in NodeJS like a boss!
 
-No more shit-coding paths in Node like so:
+No more long paths in Node, like:
 
 ```js
-require('../../../../some/very/deep/module')
+import something from ('../../../../some/very/deep/module');
 ```
+
 Enough of this madness!
 
 Just create an alias and do it the right way:
 
 ```js
-var module = require('@deep/module')
-// Or ES6
 import module from '@deep/module'
+// Or CommonJS
+const module = require('@deep/module')
 ```
 
 It also allows you to register directories that will act just like `node_modules` but with your own private modules, so that you can access them directly:
 
 ```js
-require('my_private_module');
-// Or ES6
 import module from 'my_private_module'
+// Or CommonJS
+const module = require('my_private_module')
 ```
 
 **WARNING:** If you are going to use this package within another NPM package, please read [Using within another NPM package](#using-within-another-npm-package) first to be aware of potential caveats.
@@ -44,84 +42,83 @@ npm i --save module-alias
 
 ## Usage
 
-### CommonJS (require)
+### ES Modules (Node 18.19+)
 
-Add your custom configuration to your `package.json` (in your application's root)
+Add your custom configuration to your `package.json` (in your application's root):
 
-```js
-// Aliases
-"_moduleAliases": {
-  "@root"      : ".", // Application's root
-  "@deep"      : "src/some/very/deep/directory/or/file",
-  "@my_module" : "lib/some-file.js",
-  "something"  : "src/foo", // Or without @. Actually, it could be any string
+```json
+{
+  "_moduleAliases": {
+    "@root": ".",
+    "@lib": "src/lib",
+    "@utils": "src/utils"
+  },
+  "_moduleDirectories": ["node_modules_custom"]
 }
-
-// Custom module directories, just like `node_modules` but with your private modules (optional)
-"_moduleDirectories": ["node_modules_custom"],
 ```
 
-Then add this line at the very main file of your app, before any code
+Run your app with the `--import` flag:
+
+```bash
+node --import module-alias/register ./app.mjs # Or use a custom registerer, see below
+```
+
+**Why the `--import` flag?**
+
+Unlike CommonJS, you cannot import `module-alias/register` at runtime. All `import` statements are hoisted and resolved before any code runs. The `--import` flag loads the loader hooks before your application starts.
+
+### Programmatic ESM Usage (Node 22.15+):
+
+For programmatic alias registration, create a custom loader file:
+
+```js
+// my-aliases.mjs
+import { addAlias, addAliases } from 'module-alias'
+
+addAlias('@utils', process.cwd() + '/src/utils')
+// or
+addAliases({
+  '@utils': process.cwd() + '/src/utils',
+  '@lib': process.cwd() + '/src/lib'
+})
+```
+
+Then use it with the `--import` flag:
+
+```bash
+node --import ./my-aliases.mjs ./app.mjs
+```
+
+### CommonJS (older Node 12+ versions)
+
+Add your custom configuration to your `package.json`:
+
+```json
+{
+  "_moduleAliases": {
+    "@root": ".",
+    "@deep": "src/some/very/deep/directory/or/file",
+    "@my_module": "lib/some-file.js"
+  },
+  "_moduleDirectories": ["node_modules_custom"]
+}
+```
+
+Then add this line at the very main file of your app, before any code:
 
 ```js
 require('module-alias/register')
 ```
 
-**And you're all set!** Now you can do stuff like:
+Now you can use aliases:
 
 ```js
 require('something')
 const module = require('@root/some-module')
 const veryDeepModule = require('@deep/my-module')
-const customModule = require('my_private_module') // module from `node_modules_custom` directory
-
-// Or ES6
-import 'something'
-import module from '@root/some-module'
-import veryDeepModule from '@deep/my-module'
-import customModule from 'my_private_module' // module from `node_modules_custom` directory
 ```
 
-### ES Modules (import) - Node 18+
-
-For native ES modules, use the `--import` flag:
-
-```bash
-node --import module-alias/register ./app.mjs
-```
-
-Your `package.json` configuration works the same way:
-
-```json
-{
-  "_moduleAliases": {
-    "@lib": "src/lib",
-    "@utils": "src/utils"
-  }
-}
-```
-
-Then in your ES module:
-
-```js
-import { something } from '@lib/something.js'
-```
-
-**Node Version Support:**
-
-| Node Version | API Used |
-|--------------|----------|
-| 22.15+ | `module.registerHooks()` (sync, recommended) |
-| 18.19 - 22.14 | `module.register()` (async) |
-| < 18.19 | Not supported for ESM |
-
-**ESM Limitations:**
-
-- Requires `--import` flag - cannot be imported at runtime like CJS
-- Programmatic `addAlias()` not available before app starts
-- Function-based resolvers must be configured via the loader API
-
-## Advanced usage
+## Programmatic CommonJS usage
 
 If you don't want to modify your `package.json` or you just prefer to set it all up programmatically, then the following methods are available for you:
 
@@ -173,7 +170,7 @@ moduleAlias(__dirname + '/package.json')
 moduleAlias()
 ```
 
-## Usage with WebPack
+## Usage with Webpack
 
 Luckily, WebPack has a built in support for aliases and custom modules directories so it's easy to make it work on the client side as well!
 
@@ -217,7 +214,6 @@ You can use `module-alias` within another NPM package, however there are a few t
 
 Here is an [example project](https://github.com/Kehrlann/module-alias-library).
 
-
 ## Known incompatibilities
 
 This module does not play well with:
@@ -226,29 +222,15 @@ This module does not play well with:
 - [Jest](https://jestjs.io), which discards node's module system entirely to use it's own module system, bypassing module-alias.
 - The [NCC compiler](https://github.com/zeit/ncc), as it uses WebPack under the hood without exposing properties, such as resolve.alias. It is not [something they wish to do](https://github.com/zeit/ncc/pull/460).
 
-## How it works?
-
-In order to register an alias it modifies the internal `Module._resolveFilename` method so that when you use `require` or `import` it first checks whether the given string starts with one of the registered aliases, if so, it replaces the alias in the string with the target path of the alias.
-
-In order to register a custom modules path (`addPath`) it modifies the internal `Module._nodeModulePaths` method so that the given directory then acts like it's the `node_modules` directory.
-
 ## Refactor your code (for already existing projects)
 
 If you are using this on an existing project, you can use [relative-to-alias](https://github.com/s-yadav/relative-to-alias) to refactor your code to start using aliases.
 
-## Donate
+## Special Thanks
 
-If everyone who downloads module-alias would donate just $1, I would be a millionaire in 1 week!
-
-I love contributing to open source, for free, but you know, sometimes, in the middle of the night, I may wan to eat.
-
-There are some improvements planned for module-alias and your donations will help a lot to make it happen faster.
-
-[DONATE $1 ❤️](https://tinyurl.com/donate-module-alias) and thank you so much!
-
+Special thanks to [Artur Havrylov](https://github.com/artnikbrothers) and [Daniel Garnier-Moiroux](https://www.npmjs.com/~kehrlann) for valuable contributions.
 
 [npm-image]: https://img.shields.io/npm/v/module-alias.svg
 [npm-url]: https://npmjs.org/package/module-alias
 [travis-image]: https://img.shields.io/travis/ilearnio/module-alias/master.svg
 [travis-url]: https://travis-ci.org/ilearnio/module-alias
-
