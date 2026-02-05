@@ -49,3 +49,18 @@ export function reset() {
   _reset()
   hooksRegistered = false
 }
+
+// Default export for compatibility with: import moduleAlias from 'module-alias'
+import { init } from './esm-loader.mjs'
+
+function moduleAlias(options) {
+  ensureHooks()
+  init(options)
+}
+
+moduleAlias.addAlias = addAlias
+moduleAlias.addAliases = addAliases
+moduleAlias.addPath = addPath
+moduleAlias.reset = reset
+
+export default moduleAlias
