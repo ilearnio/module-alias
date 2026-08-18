@@ -5,9 +5,9 @@ name: test
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ master, dev ]
   pull_request:
-    branches: [ dev ]
+    branches: [ master, dev ]
   workflow_dispatch:
 
 jobs:
@@ -33,16 +33,17 @@ jobs:
 
   test-esm:
     # CJS + ESM tests for Node 18+
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest]
         node-version: [18.x, 20.x, 22.x]
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
