@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 import chai from 'chai'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { isPathMatchesAlias, resolveAlias, reset, addAlias, addAliases } from '../../esm-loader.mjs'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { isPathMatchesAlias, resolveAlias, reset, addAlias, addAliases, resolve } from '../../esm-loader.mjs'
 
 const { expect } = chai
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -87,6 +87,42 @@ describe('ESM Loader', function () {
 
       expect(resolveAlias('@lib/foo')).to.equal('/path/to/lib/foo')
       expect(resolveAlias('@utils/bar')).to.equal('/path/to/utils/bar')
+    })
+  })
+
+  describe('resolve hook', function () {
+    afterEach(function () {
+      reset()
+    })
+
+    it('should convert absolute paths to file URLs', async function () {
+      // Platform-native absolute path (C:\... on Windows, /... on POSIX)
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      const result = await resolve('@src/foo', {}, () => {
+        throw new Error('nextResolve should not be called for absolute paths')
+      })
+      expect(result.url).to.equal(pathToFileURL(path.join(targetPath, 'foo')).href)
+      expect(result.shortCircuit).to.equal(true)
+    })
+
+    it('should pass non-absolute resolved specifiers to nextResolve', async function () {
+      addAlias('lodash-alias', 'lodash')
+
+      const result = await resolve('lodash-alias/fp', {}, (specifier) => {
+        return { url: 'resolved:' + specifier }
+      })
+      expect(result.url).to.equal('resolved:lodash/fp')
+    })
+
+    it('should pass non-aliased specifiers through unchanged', async function () {
+      addAlias('@src', '/some/path')
+
+      const result = await resolve('other-module', {}, (specifier) => {
+        return { url: 'resolved:' + specifier }
+      })
+      expect(result.url).to.equal('resolved:other-module')
     })
   })
 })

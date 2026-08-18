@@ -2,7 +2,7 @@
 // Provides resolve hooks for ES modules
 
 import { readFileSync, existsSync, statSync } from 'node:fs'
-import { join, resolve as pathResolve, dirname } from 'node:path'
+import { join, resolve as pathResolve, dirname, isAbsolute } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 let aliases = {}
@@ -39,7 +39,7 @@ export function init (options = {}) {
   const pkgAliases = pkg._moduleAliases || {}
   for (const alias in pkgAliases) {
     const target = pkgAliases[alias]
-    aliases[alias] = target.startsWith('/') ? target : join(base, target)
+    aliases[alias] = isAbsolute(target) ? target : join(base, target)
   }
 
   // Load _moduleDirectories
@@ -138,7 +138,7 @@ export async function resolve (specifier, context, nextResolve) {
   const resolved = resolveAlias(specifier, context.parentURL)
   if (resolved) {
     // If absolute path, convert to file URL
-    if (resolved.startsWith('/')) {
+    if (isAbsolute(resolved)) {
       return { url: pathToFileURL(resolved).href, shortCircuit: true }
     }
     // Otherwise let Node resolve it (could be npm package)
