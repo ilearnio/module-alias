@@ -3,6 +3,7 @@ var expect = require('chai').expect
 var execSync = require('child_process').execSync
 var path = require('path')
 var semver = require('semver')
+var pathToFileURL = require('url').pathToFileURL
 
 describe('ESM Integration', function () {
   // Skip all ESM tests on Node < 18.19.0
@@ -17,10 +18,10 @@ describe('ESM Integration', function () {
   describe('basic alias', function () {
     it('should resolve alias in ESM with --import flag', function () {
       var fixture = path.join(fixturesDir, 'basic')
-      var registerPath = path.join(moduleAliasRoot, 'register.mjs')
+      var registerUrl = pathToFileURL(path.join(moduleAliasRoot, 'register.mjs')).href
 
       var result = execSync(
-        'node --import ' + registerPath + ' app.mjs',
+        'node --import ' + registerUrl + ' app.mjs',
         { cwd: fixture, encoding: 'utf8' }
       )
 
@@ -31,10 +32,10 @@ describe('ESM Integration', function () {
   describe('moduleDirectories', function () {
     it('should resolve modules from custom directories', function () {
       var fixture = path.join(fixturesDir, 'module-dirs')
-      var registerPath = path.join(moduleAliasRoot, 'register.mjs')
+      var registerUrl = pathToFileURL(path.join(moduleAliasRoot, 'register.mjs')).href
 
       var result = execSync(
-        'node --import ' + registerPath + ' app.mjs',
+        'node --import ' + registerUrl + ' app.mjs',
         { cwd: fixture, encoding: 'utf8' }
       )
 

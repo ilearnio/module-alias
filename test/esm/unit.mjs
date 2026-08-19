@@ -76,7 +76,7 @@ describe('ESM Loader', function () {
       })
 
       const result = resolveAlias('react-dom/server')
-      expect(result).to.equal('/path/to/server')
+      expect(result).to.equal(path.join('/path/to/server'))
     })
 
     it('should handle multiple aliases', function () {
@@ -85,8 +85,8 @@ describe('ESM Loader', function () {
         '@utils': '/path/to/utils'
       })
 
-      expect(resolveAlias('@lib/foo')).to.equal('/path/to/lib/foo')
-      expect(resolveAlias('@utils/bar')).to.equal('/path/to/utils/bar')
+      expect(resolveAlias('@lib/foo')).to.equal(path.join('/path/to/lib', 'foo'))
+      expect(resolveAlias('@utils/bar')).to.equal(path.join('/path/to/utils', 'bar'))
     })
   })
 
@@ -113,7 +113,7 @@ describe('ESM Loader', function () {
       const result = await resolve('lodash-alias/fp', {}, (specifier) => {
         return { url: 'resolved:' + specifier }
       })
-      expect(result.url).to.equal('resolved:lodash/fp')
+      expect(result.url).to.equal('resolved:' + path.join('lodash', 'fp'))
     })
 
     it('should pass non-aliased specifiers through unchanged', async function () {

@@ -2,6 +2,8 @@
 // Usage: node --import module-alias/register ./app.mjs
 
 import { register } from 'node:module'
+import { isAbsolute } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 // Check Node version for registerHooks support (22.15+)
 const [major, minor] = process.versions.node.split('.').map(Number)
@@ -18,6 +20,10 @@ if (hasRegisterHooks) {
     resolve (specifier, context, nextResolve) {
       const resolved = resolveAlias(specifier, context.parentURL)
       if (resolved) {
+        // If absolute path, convert to file URL
+        if (isAbsolute(resolved)) {
+          return { url: pathToFileURL(resolved).href, shortCircuit: true }
+        }
         return nextResolve(resolved, context)
       }
       return nextResolve(specifier, context)
