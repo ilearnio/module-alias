@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 17.x]
+        node-version: [6.x, 8.x, 10.x, 12.x, 14.x, 16.x, 17.x, 18.x]
       fail-fast: false
 
     steps:
@@ -32,13 +32,18 @@ jobs:
     - run: npm run testonly
 
   test-esm:
-    # CJS + ESM tests for Node 18+
+    # CJS + ESM tests for Node 20.19+ (mocha 2.x loads .mjs via require(),
+    # which needs require(esm) support - not available on Node 18)
     runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
 
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x]
       fail-fast: false
 
     steps:
