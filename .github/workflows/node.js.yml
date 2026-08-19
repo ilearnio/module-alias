@@ -36,10 +36,6 @@ jobs:
     # which needs require(esm) support - not available on Node 18)
     runs-on: ${{ matrix.os }}
 
-    defaults:
-      run:
-        shell: bash
-
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
