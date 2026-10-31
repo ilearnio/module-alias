@@ -133,18 +133,22 @@ export function reset () {
   initialized = false
 }
 
-// For Node 18-21: async loader hooks
-export async function resolve (specifier, context, nextResolve) {
+// Shared resolve hook body. Aliased targets always go through nextResolve so
+// loaders registered earlier (tsx, ts-node, ...) still see the request.
+// Absolute paths are passed as file: URLs, since Windows paths such as
+// C:\foo are not valid ESM specifiers.
+export function resolveSync (specifier, context, nextResolve) {
   const resolved = resolveAlias(specifier, context.parentURL)
   if (resolved) {
-    // If absolute path, convert to file URL
-    if (isAbsolute(resolved)) {
-      return { url: pathToFileURL(resolved).href, shortCircuit: true }
-    }
-    // Otherwise let Node resolve it (could be npm package)
-    return nextResolve(resolved, context)
+    const next = isAbsolute(resolved) ? pathToFileURL(resolved).href : resolved
+    return nextResolve(next, context)
   }
   return nextResolve(specifier, context)
+}
+
+// For Node 18.19 - 22.14: async loader hooks via module.register
+export async function resolve (specifier, context, nextResolve) {
+  return resolveSync(specifier, context, nextResolve)
 }
 
 export async function initialize (data) {

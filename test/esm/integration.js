@@ -42,4 +42,18 @@ describe('ESM Integration', function () {
       expect(result.trim()).to.equal('Hello from custom module')
     })
   })
+
+  describe('loader chain', function () {
+    it('should hand aliased file URLs to loaders registered earlier', function () {
+      var fixture = path.join(fixturesDir, 'chain')
+      var registerUrl = pathToFileURL(path.join(moduleAliasRoot, 'register.mjs')).href
+
+      var result = execSync(
+        'node --import ./ext-hook.mjs --import ' + registerUrl + ' app.mjs',
+        { cwd: fixture, encoding: 'utf8' }
+      )
+
+      expect(result.trim()).to.equal('Hello from chained loader')
+    })
+  })
 })

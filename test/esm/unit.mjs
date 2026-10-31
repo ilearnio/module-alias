@@ -95,16 +95,22 @@ describe('ESM Loader', function () {
       reset()
     })
 
-    it('should convert absolute paths to file URLs', async function () {
+    it('should pass absolute paths to nextResolve as file URLs', async function () {
       // Platform-native absolute path (C:\... on Windows, /... on POSIX)
       const targetPath = path.join(__dirname, '../src')
       addAlias('@src', targetPath)
 
-      const result = await resolve('@src/foo', {}, () => {
-        throw new Error('nextResolve should not be called for absolute paths')
+      const context = { parentURL: 'file:///app.mjs' }
+      let received
+      const result = await resolve('@src/foo', context, (specifier, ctx) => {
+        received = { specifier, ctx }
+        return { url: 'resolved:' + specifier }
       })
-      expect(result.url).to.equal(pathToFileURL(path.join(targetPath, 'foo')).href)
-      expect(result.shortCircuit).to.equal(true)
+      const expectedUrl = pathToFileURL(path.join(targetPath, 'foo')).href
+      expect(received.specifier).to.equal(expectedUrl)
+      expect(received.ctx).to.equal(context)
+      expect(result.url).to.equal('resolved:' + expectedUrl)
+      expect(result.shortCircuit).to.equal(undefined)
     })
 
     it('should pass non-absolute resolved specifiers to nextResolve', async function () {
