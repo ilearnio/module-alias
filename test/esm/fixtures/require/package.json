@@ -1,0 +1,6 @@
+{
+  "name": "esm-require-test",
+  "_moduleAliases": {
+    "@lib": "src/lib"
+  }
+}

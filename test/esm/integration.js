@@ -72,4 +72,22 @@ describe('ESM Integration', function () {
       expect(result.trim()).to.equal('Hello from programmatic alias')
     })
   })
+
+  describe('require() under register.mjs', function () {
+    // register.mjs uses module.registerHooks on Node 22.15+, which also
+    // intercepts CommonJS require()
+    var it22 = semver.gte(process.version, '22.15.0') ? it : it.skip
+
+    it22('should resolve aliases in require() calls', function () {
+      var fixture = path.join(fixturesDir, 'require')
+      var registerUrl = pathToFileURL(path.join(moduleAliasRoot, 'register.mjs')).href
+
+      var result = execSync(
+        'node --import ' + registerUrl + ' app.cjs',
+        { cwd: fixture, encoding: 'utf8' }
+      )
+
+      expect(result.trim()).to.equal('Hello from require')
+    })
+  })
 })

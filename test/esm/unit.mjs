@@ -113,6 +113,38 @@ describe('ESM Loader', function () {
       expect(result.shortCircuit).to.equal(undefined)
     })
 
+    it('should pass absolute paths to nextResolve as plain paths for require()', async function () {
+      // CommonJS resolution under registerHooks cannot take file: URLs
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      // Node 22.15 passes conditions as a Set for require(), later versions as an array
+      const received = []
+      const next = (specifier) => {
+        received.push(specifier)
+        return { url: 'resolved:' + specifier }
+      }
+      await resolve('@src/foo', { conditions: ['node', 'require'] }, next)
+      await resolve('@src/foo', { conditions: new Set(['node', 'require']) }, next)
+      const plainPath = path.join(targetPath, 'foo')
+      expect(received).to.deep.equal([plainPath, plainPath])
+    })
+
+    it('should keep query and hash outside the encoded file URL', async function () {
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      const received = []
+      const next = (specifier) => {
+        received.push(specifier)
+        return { url: specifier }
+      }
+      await resolve('@src/foo.mjs?v=1', {}, next)
+      await resolve('@src/foo.mjs#frag', {}, next)
+      const fileUrl = pathToFileURL(path.join(targetPath, 'foo.mjs')).href
+      expect(received).to.deep.equal([fileUrl + '?v=1', fileUrl + '#frag'])
+    })
+
     it('should pass non-absolute resolved specifiers to nextResolve', async function () {
       addAlias('lodash-alias', 'lodash')
 

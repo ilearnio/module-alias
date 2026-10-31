@@ -135,15 +135,30 @@ export function reset () {
 
 // Shared resolve hook body. Aliased targets always go through nextResolve so
 // loaders registered earlier (tsx, ts-node, ...) still see the request.
-// Absolute paths are passed as file: URLs, since Windows paths such as
-// C:\foo are not valid ESM specifiers.
 export function resolveSync (specifier, context, nextResolve) {
   const resolved = resolveAlias(specifier, context.parentURL)
   if (resolved) {
-    const next = isAbsolute(resolved) ? pathToFileURL(resolved).href : resolved
-    return nextResolve(next, context)
+    return nextResolve(toNextSpecifier(resolved, specifier, context), context)
   }
   return nextResolve(specifier, context)
+}
+
+// Absolute paths become file: URLs for import, since Windows paths such as
+// C:\foo are not valid ESM specifiers. require() (routed through
+// registerHooks on Node 22.15+) keeps the plain path, which CommonJS expects.
+// A query or hash from the specifier stays outside the encoded path.
+function toNextSpecifier (resolved, specifier, context) {
+  if (!isAbsolute(resolved)) return resolved
+  // conditions is an array, or a Set for require() on some Node 22 releases
+  const conditions = Array.from(context.conditions || [])
+  if (conditions.includes('require')) return resolved
+
+  const suffixStart = specifier.search(/[?#]/)
+  const suffix = suffixStart === -1 ? '' : specifier.slice(suffixStart)
+  if (suffix && resolved.endsWith(suffix)) {
+    return pathToFileURL(resolved.slice(0, -suffix.length)).href + suffix
+  }
+  return pathToFileURL(resolved).href
 }
 
 // For Node 18.19 - 22.14: async loader hooks via module.register
