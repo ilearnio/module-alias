@@ -2,7 +2,7 @@
 // Provides programmatic API with auto-registered hooks
 
 import { registerHooks } from 'node:module'
-import { addAlias as _addAlias, addAliases as _addAliases, addPath as _addPath, reset as _reset, resolveAlias } from './esm-loader.mjs'
+import { addAlias as _addAlias, addAliases as _addAliases, addPath as _addPath, reset as _reset, resolveSync } from './esm-loader.mjs'
 
 let hooksRegistered = false
 
@@ -17,15 +17,7 @@ function ensureHooks() {
     return
   }
 
-  registerHooks({
-    resolve(specifier, context, nextResolve) {
-      const resolved = resolveAlias(specifier, context.parentURL)
-      if (resolved) {
-        return nextResolve(resolved, context)
-      }
-      return nextResolve(specifier, context)
-    }
-  })
+  registerHooks({ resolve: resolveSync })
 
   hooksRegistered = true
 }

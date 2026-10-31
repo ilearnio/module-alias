@@ -56,4 +56,20 @@ describe('ESM Integration', function () {
       expect(result.trim()).to.equal('Hello from chained loader')
     })
   })
+
+  describe('programmatic API', function () {
+    // index.mjs relies on module.registerHooks (Node 22.15+)
+    var it22 = semver.gte(process.version, '22.15.0') ? it : it.skip
+
+    it22('should resolve an alias added with addAlias to an absolute path', function () {
+      var fixture = path.join(fixturesDir, 'programmatic')
+
+      var result = execSync(
+        'node app.mjs',
+        { cwd: fixture, encoding: 'utf8' }
+      )
+
+      expect(result.trim()).to.equal('Hello from programmatic alias')
+    })
+  })
 })
