@@ -151,7 +151,8 @@ describe('ESM Loader', function () {
       const result = await resolve('lodash-alias/fp', {}, (specifier) => {
         return { url: 'resolved:' + specifier }
       })
-      expect(result.url).to.equal('resolved:' + path.join('lodash', 'fp'))
+      // Bare specifiers use / on every platform, never path.sep
+      expect(result.url).to.equal('resolved:lodash/fp')
     })
 
     it('should pass non-aliased specifiers through unchanged', async function () {

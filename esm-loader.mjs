@@ -2,7 +2,7 @@
 // Provides resolve hooks for ES modules
 
 import { readFileSync, existsSync, statSync } from 'node:fs'
-import { join, resolve as pathResolve, dirname, isAbsolute } from 'node:path'
+import { join, resolve as pathResolve, dirname, isAbsolute, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 let aliases = {}
@@ -148,7 +148,8 @@ export function resolveSync (specifier, context, nextResolve) {
 // registerHooks on Node 22.15+) keeps the plain path, which CommonJS expects.
 // A query or hash from the specifier stays outside the encoded path.
 function toNextSpecifier (resolved, specifier, context) {
-  if (!isAbsolute(resolved)) return resolved
+  // Bare specifiers (npm packages) use / even where path.join used backslashes
+  if (!isAbsolute(resolved)) return resolved.split(sep).join('/')
   // conditions is an array, or a Set for require() on some Node 22 releases
   const conditions = Array.from(context.conditions || [])
   if (conditions.includes('require')) return resolved
