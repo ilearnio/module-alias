@@ -1,9 +1,14 @@
 /* eslint-env mocha */
 var expect = require('chai').expect
-var execSync = require('child_process').execSync
+var childProcess = require('child_process')
+var execSync = childProcess.execSync
+var execFileSync = childProcess.execFileSync
 var path = require('path')
 var semver = require('semver')
 var pathToFileURL = require('url').pathToFileURL
+
+// Same feature check the entry points use (22.15+ and 23.5+)
+var hasRegisterHooks = typeof require('module').registerHooks === 'function'
 
 describe('ESM Integration', function () {
   // Skip all ESM tests on Node < 18.19.0
@@ -58,10 +63,10 @@ describe('ESM Integration', function () {
   })
 
   describe('programmatic API', function () {
-    // index.mjs relies on module.registerHooks (Node 22.15+)
-    var it22 = semver.gte(process.version, '22.15.0') ? it : it.skip
+    // index.mjs relies on module.registerHooks
+    var itHooks = hasRegisterHooks ? it : it.skip
 
-    it22('should resolve an alias added with addAlias to an absolute path', function () {
+    itHooks('should resolve an alias added with addAlias to an absolute path', function () {
       var fixture = path.join(fixturesDir, 'programmatic')
 
       var result = execSync(
@@ -74,11 +79,11 @@ describe('ESM Integration', function () {
   })
 
   describe('require() under register.mjs', function () {
-    // register.mjs uses module.registerHooks on Node 22.15+, which also
+    // register.mjs uses module.registerHooks where available, which also
     // intercepts CommonJS require()
-    var it22 = semver.gte(process.version, '22.15.0') ? it : it.skip
+    var itHooks = hasRegisterHooks ? it : it.skip
 
-    it22('should resolve aliases in require() calls', function () {
+    itHooks('should resolve aliases in require() calls', function () {
       var fixture = path.join(fixturesDir, 'require')
       var registerUrl = pathToFileURL(path.join(moduleAliasRoot, 'register.mjs')).href
 
@@ -88,6 +93,35 @@ describe('ESM Integration', function () {
       )
 
       expect(result.trim()).to.equal('Hello from require')
+    })
+  })
+
+  describe('programmatic entry point', function () {
+    it('should load on every Node version that runs the ESM suite', function () {
+      var indexUrl = pathToFileURL(path.join(moduleAliasRoot, 'index.mjs')).href
+      var script = 'import m from "' + indexUrl + '"; console.log(typeof m.addAlias)'
+
+      var result = execFileSync(
+        'node', ['--input-type=module', '-e', script],
+        { encoding: 'utf8' }
+      )
+
+      expect(result.trim()).to.equal('function')
+    })
+  })
+
+  describe('programmatic API reset', function () {
+    var itHooks = hasRegisterHooks ? it : it.skip
+
+    itHooks('should keep a single resolve hook across reset() calls', function () {
+      var fixture = path.join(fixturesDir, 'programmatic-reset')
+
+      var result = execSync(
+        'node app.mjs',
+        { cwd: fixture, encoding: 'utf8' }
+      )
+
+      expect(result.trim()).to.equal('Hello after reset (1 hook)')
     })
   })
 })

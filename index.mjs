@@ -1,24 +1,24 @@
 // ESM entry point for module-alias
 // Provides programmatic API with auto-registered hooks
 
-import { registerHooks } from 'node:module'
+// Default import: a named registerHooks import fails to link where it is missing
+import module from 'node:module'
 import { addAlias as _addAlias, addAliases as _addAliases, addPath as _addPath, reset as _reset, resolveSync } from './esm-loader.mjs'
 
+// One hook for the process lifetime. reset() only clears alias state, so the
+// hook keeps its place in the loader chain and is never stacked.
 let hooksRegistered = false
 
 function ensureHooks() {
   if (hooksRegistered) return
 
-  const [major, minor] = process.versions.node.split('.').map(Number)
-  const hasRegisterHooks = major > 22 || (major === 22 && minor >= 15)
-
-  if (!hasRegisterHooks) {
+  // registerHooks shipped in 22.15 and 23.5 (missing in 23.0 - 23.4)
+  if (typeof module.registerHooks !== 'function') {
     console.warn('[module-alias] Programmatic ESM usage requires Node 22.15+. For older versions, use module-alias/register with _moduleAliases in package.json.')
     return
   }
 
-  registerHooks({ resolve: resolveSync })
-
+  module.registerHooks({ resolve: resolveSync })
   hooksRegistered = true
 }
 
@@ -39,7 +39,6 @@ export function addPath(path) {
 
 export function reset() {
   _reset()
-  hooksRegistered = false
 }
 
 // Default export for compatibility with: import moduleAlias from 'module-alias'
