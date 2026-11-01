@@ -1,6 +1,6 @@
 # module-alias
 
-[![NPM Version][npm-image]][npm-url]
+[![NPM Version][npm-image]][npm-url] [![Tests][ci-image]][ci-url]
 
 Donations are much appreciated and would help me continue working on this package! [Donate here ❤️](https://tinyurl.com/donate-module-alias).
 
@@ -242,5 +242,5 @@ Special thanks to [Artur Havrylov](https://github.com/artnikbrothers) and [Danie
 
 [npm-image]: https://img.shields.io/npm/v/module-alias.svg
 [npm-url]: https://npmjs.org/package/module-alias
-[travis-image]: https://img.shields.io/travis/ilearnio/module-alias/master.svg
-[travis-url]: https://travis-ci.org/ilearnio/module-alias
+[ci-image]: https://github.com/ilearnio/module-alias/actions/workflows/node.js.yml/badge.svg?branch=master
+[ci-url]: https://github.com/ilearnio/module-alias/actions/workflows/node.js.yml
