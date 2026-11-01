@@ -9,6 +9,11 @@ var Module = module.constructor.length > 1
 
 var nodePath = require('path')
 
+// Bundlers like webpack rewrite `require` in bundled code, so `require.cache`,
+// `require.main` and require() with a dynamic path stop pointing at Node's.
+// A require built by createRequire() is Node's own and is left alone.
+var nativeRequire = createNativeRequire()
+
 var modulePaths = []
 var moduleAliases = {}
 var moduleAliasNames = []
@@ -126,9 +131,9 @@ function reset () {
 
     // Delete from require.cache if the module has been required before.
     // This is required for node >= 11
-    Object.getOwnPropertyNames(require.cache).forEach(function (name) {
+    Object.getOwnPropertyNames(nativeRequire.cache).forEach(function (name) {
       if (name.indexOf(path) !== -1) {
-        delete require.cache[name]
+        delete nativeRequire.cache[name]
       }
     })
 
@@ -172,7 +177,7 @@ function init (options) {
     try {
       base = candidatePackagePaths[i]
 
-      npmPackage = require(nodePath.join(base, 'package.json'))
+      npmPackage = nativeRequire(nodePath.join(base, 'package.json'))
       break
     } catch (e) {
       // noop
@@ -213,7 +218,18 @@ function init (options) {
 }
 
 function getMainModule () {
-  return require.main._simulateRepl ? undefined : require.main
+  return nativeRequire.main._simulateRepl ? undefined : nativeRequire.main
+}
+
+function createNativeRequire () {
+  var create = BuiltinModule.createRequire || BuiltinModule.createRequireFromPath
+  if (create) return create(__filename)
+
+  // Node < 10.12
+  var req = BuiltinModule.prototype.require.bind(module)
+  req.cache = BuiltinModule._cache
+  req.main = process.mainModule
+  return req
 }
 
 module.exports = init
