@@ -4,6 +4,7 @@ var exec = require('child_process').exec
 var path = require('path')
 var fs = require('fs')
 var semver = require('semver')
+var vm = require('vm')
 
 describe('module-alias', function () {
   var moduleAlias
@@ -173,6 +174,58 @@ describe('module-alias', function () {
 
     it('should reset', function () {
       moduleAlias.reset()
+    })
+  })
+
+  // Bundlers like webpack rewrite `require` inside bundled code: `require.cache`
+  // and `require.main` point at the bundle's own registry, and require() with
+  // a dynamic path throws. Load index.js the same way to simulate that.
+  context('when bundled (require replaced by bundler)', function () {
+    var indexFile = path.resolve(__dirname, '..', 'index.js')
+    var bundled
+
+    before(function () {
+      var bundlerRequire = function (id) {
+        if (id === 'module' || id === 'path') return require(id)
+        throw new Error("Cannot find module '" + id + "'")
+      }
+      bundlerRequire.cache = {}
+      bundlerRequire.main = { exports: {} }
+      var bundlerModule = { exports: {} }
+      var source = fs.readFileSync(indexFile, 'utf8')
+      var wrapper = vm.runInThisContext(
+        '(function (exports, require, module, __filename, __dirname) {' + source + '\n})',
+        { filename: indexFile }
+      )
+      wrapper(bundlerModule.exports, bundlerRequire, bundlerModule, indexFile, path.dirname(indexFile))
+      bundled = bundlerModule.exports
+    })
+
+    afterEach(function () {
+      bundled.reset()
+    })
+
+    it('should import settings from package.json', function () {
+      bundled({ base: path.join(__dirname, 'src') })
+      expect(require('@foo')).to.equal('Hello from foo')
+    })
+
+    it('should add the path to the real main module', function () {
+      var dir = path.join(__dirname, 'src')
+      bundled.addPath(dir)
+      expect(require.main.paths).to.include(dir)
+      bundled.reset()
+      expect(require.main.paths).to.not.include(dir)
+    })
+
+    it('should clear the real require.cache on reset', function () {
+      var dir = path.join(__dirname, 'src')
+      var file = path.join(dir, 'foo', 'index.js')
+      bundled.addPath(dir)
+      require(file)
+      expect(require.cache[file]).to.not.equal(undefined)
+      bundled.reset()
+      expect(require.cache[file]).to.equal(undefined)
     })
   })
 
