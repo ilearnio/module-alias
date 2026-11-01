@@ -8,9 +8,9 @@
   },
   "scripts": {
     "test": "npm run lint && npm run testonly",
-    "testonly": "NODE_ENV=test mocha test/specs.js",
-    "testonly-watch": "NODE_ENV=test mocha -w test/specs.js",
-    "test:esm": "NODE_ENV=test mocha test/esm/unit.mjs test/esm/integration.js",
+    "testonly": "mocha test/specs.js",
+    "testonly-watch": "mocha -w test/specs.js",
+    "test:esm": "mocha test/esm/unit.mjs test/esm/integration.js",
     "test:all": "npm run testonly && npm run test:esm",
     "lint": "standard"
   },

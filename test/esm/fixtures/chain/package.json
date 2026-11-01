@@ -1,0 +1,7 @@
+{
+  "name": "esm-chain-test",
+  "type": "module",
+  "_moduleAliases": {
+    "@lib": "src/lib"
+  }
+}

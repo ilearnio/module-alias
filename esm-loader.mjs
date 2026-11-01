@@ -2,7 +2,7 @@
 // Provides resolve hooks for ES modules
 
 import { readFileSync, existsSync, statSync } from 'node:fs'
-import { join, resolve as pathResolve, dirname } from 'node:path'
+import { join, resolve as pathResolve, dirname, isAbsolute, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 let aliases = {}
@@ -39,7 +39,7 @@ export function init (options = {}) {
   const pkgAliases = pkg._moduleAliases || {}
   for (const alias in pkgAliases) {
     const target = pkgAliases[alias]
-    aliases[alias] = target.startsWith('/') ? target : join(base, target)
+    aliases[alias] = isAbsolute(target) ? target : join(base, target)
   }
 
   // Load _moduleDirectories
@@ -133,18 +133,38 @@ export function reset () {
   initialized = false
 }
 
-// For Node 18-21: async loader hooks
-export async function resolve (specifier, context, nextResolve) {
+// Shared resolve hook body. Aliased targets always go through nextResolve so
+// loaders registered earlier (tsx, ts-node, ...) still see the request.
+export function resolveSync (specifier, context, nextResolve) {
   const resolved = resolveAlias(specifier, context.parentURL)
   if (resolved) {
-    // If absolute path, convert to file URL
-    if (resolved.startsWith('/')) {
-      return { url: pathToFileURL(resolved).href, shortCircuit: true }
-    }
-    // Otherwise let Node resolve it (could be npm package)
-    return nextResolve(resolved, context)
+    return nextResolve(toNextSpecifier(resolved, specifier, context), context)
   }
   return nextResolve(specifier, context)
+}
+
+// Absolute paths become file: URLs for import, since Windows paths such as
+// C:\foo are not valid ESM specifiers. require() (routed through
+// registerHooks on Node 22.15+) keeps the plain path, which CommonJS expects.
+// A query or hash from the specifier stays outside the encoded path.
+function toNextSpecifier (resolved, specifier, context) {
+  // Bare specifiers (npm packages) use / even where path.join used backslashes
+  if (!isAbsolute(resolved)) return resolved.split(sep).join('/')
+  // conditions is an array, or a Set for require() on some Node 22 releases
+  const conditions = Array.from(context.conditions || [])
+  if (conditions.includes('require')) return resolved
+
+  const suffixStart = specifier.search(/[?#]/)
+  const suffix = suffixStart === -1 ? '' : specifier.slice(suffixStart)
+  if (suffix && resolved.endsWith(suffix)) {
+    return pathToFileURL(resolved.slice(0, -suffix.length)).href + suffix
+  }
+  return pathToFileURL(resolved).href
+}
+
+// For Node 18.19 - 22.14: async loader hooks via module.register
+export async function resolve (specifier, context, nextResolve) {
+  return resolveSync(specifier, context, nextResolve)
 }
 
 export async function initialize (data) {

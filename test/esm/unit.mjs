@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 import chai from 'chai'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { isPathMatchesAlias, resolveAlias, reset, addAlias, addAliases } from '../../esm-loader.mjs'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { isPathMatchesAlias, resolveAlias, reset, addAlias, addAliases, resolve } from '../../esm-loader.mjs'
 
 const { expect } = chai
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,7 +76,7 @@ describe('ESM Loader', function () {
       })
 
       const result = resolveAlias('react-dom/server')
-      expect(result).to.equal('/path/to/server')
+      expect(result).to.equal(path.join('/path/to/server'))
     })
 
     it('should handle multiple aliases', function () {
@@ -85,8 +85,83 @@ describe('ESM Loader', function () {
         '@utils': '/path/to/utils'
       })
 
-      expect(resolveAlias('@lib/foo')).to.equal('/path/to/lib/foo')
-      expect(resolveAlias('@utils/bar')).to.equal('/path/to/utils/bar')
+      expect(resolveAlias('@lib/foo')).to.equal(path.join('/path/to/lib', 'foo'))
+      expect(resolveAlias('@utils/bar')).to.equal(path.join('/path/to/utils', 'bar'))
+    })
+  })
+
+  describe('resolve hook', function () {
+    afterEach(function () {
+      reset()
+    })
+
+    it('should pass absolute paths to nextResolve as file URLs', async function () {
+      // Platform-native absolute path (C:\... on Windows, /... on POSIX)
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      const context = { parentURL: 'file:///app.mjs' }
+      let received
+      const result = await resolve('@src/foo', context, (specifier, ctx) => {
+        received = { specifier, ctx }
+        return { url: 'resolved:' + specifier }
+      })
+      const expectedUrl = pathToFileURL(path.join(targetPath, 'foo')).href
+      expect(received.specifier).to.equal(expectedUrl)
+      expect(received.ctx).to.equal(context)
+      expect(result.url).to.equal('resolved:' + expectedUrl)
+      expect(result.shortCircuit).to.equal(undefined)
+    })
+
+    it('should pass absolute paths to nextResolve as plain paths for require()', async function () {
+      // CommonJS resolution under registerHooks cannot take file: URLs
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      // Node 22.15 passes conditions as a Set for require(), later versions as an array
+      const received = []
+      const next = (specifier) => {
+        received.push(specifier)
+        return { url: 'resolved:' + specifier }
+      }
+      await resolve('@src/foo', { conditions: ['node', 'require'] }, next)
+      await resolve('@src/foo', { conditions: new Set(['node', 'require']) }, next)
+      const plainPath = path.join(targetPath, 'foo')
+      expect(received).to.deep.equal([plainPath, plainPath])
+    })
+
+    it('should keep query and hash outside the encoded file URL', async function () {
+      const targetPath = path.join(__dirname, '../src')
+      addAlias('@src', targetPath)
+
+      const received = []
+      const next = (specifier) => {
+        received.push(specifier)
+        return { url: specifier }
+      }
+      await resolve('@src/foo.mjs?v=1', {}, next)
+      await resolve('@src/foo.mjs#frag', {}, next)
+      const fileUrl = pathToFileURL(path.join(targetPath, 'foo.mjs')).href
+      expect(received).to.deep.equal([fileUrl + '?v=1', fileUrl + '#frag'])
+    })
+
+    it('should pass non-absolute resolved specifiers to nextResolve', async function () {
+      addAlias('lodash-alias', 'lodash')
+
+      const result = await resolve('lodash-alias/fp', {}, (specifier) => {
+        return { url: 'resolved:' + specifier }
+      })
+      // Bare specifiers use / on every platform, never path.sep
+      expect(result.url).to.equal('resolved:lodash/fp')
+    })
+
+    it('should pass non-aliased specifiers through unchanged', async function () {
+      addAlias('@src', '/some/path')
+
+      const result = await resolve('other-module', {}, (specifier) => {
+        return { url: 'resolved:' + specifier }
+      })
+      expect(result.url).to.equal('resolved:other-module')
     })
   })
 })
